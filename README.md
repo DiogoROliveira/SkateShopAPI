@@ -7,6 +7,13 @@ JASMIN_CLIENT_ID=your-client-id
 JASMIN_CLIENT_SECRET=your-client-secret
 ```
 
+To acquire the JASMIN_CLIENT_ID and JASMIN_CLIENT_SECRET, you need to:
+
+- Create a Publisher: https://apps.primaverabss.com/publisher/dashboard
+- Create an App: https://apps.primaverabss.com/developer/dashboard
+
+When creating the App, you must set the OAuth flow as "Client Credentials" and click the "Reset Client Secret" button.
+
 Install missing dependencies:
 ```bash
 npm isntall
