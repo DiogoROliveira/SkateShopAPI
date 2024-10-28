@@ -9,7 +9,7 @@ const jasminController = require('../controllers/jasminController');
 // router.post('/order', jasminController.createOrder);
 
 router.get('/invoices', jasminController.getInvoicesList);
-
+router.get('/saleitems', jasminController.getSaleItemsList);
 
 
 

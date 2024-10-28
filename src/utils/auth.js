@@ -13,7 +13,7 @@ async function getAccessToken() {
 
 
     try {
-        const response = await axios.post('https://identity.primaverabss.com/core/connect/token', new URLSearchParams({
+        const response = await axios.post('https://identity.primaverabss.com/connect/token', new URLSearchParams({
             grant_type: 'client_credentials',
             client_id: process.env.JASMIN_CLIENT_ID,
             client_secret: process.env.JASMIN_CLIENT_SECRET,

@@ -1,7 +1,6 @@
 // TODO getCustomer, createOrder, ou listInvoices (funçoes para lidar com as requests)
 const { getInvoices } = require('../services/jasminService');
 
-
 const getInvoicesList = async (req, res) => {
     try {
         const invoices = await getInvoices(); 
@@ -12,5 +11,9 @@ const getInvoicesList = async (req, res) => {
     }
 };
 
+const getSaleItemsList = async (req, res) => {
+    
+};
 
-module.exports = { getInvoicesList };
+
+module.exports = { getInvoicesList, getSaleItemsList };

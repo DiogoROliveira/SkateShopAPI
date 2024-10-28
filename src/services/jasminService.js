@@ -2,7 +2,7 @@
 
 const axios = require('axios');
 const { getAccessToken } = require('../utils/auth');
-const { jasminBaseURL } = require('../config/jasminConfig');
+const { jasminBaseURL, jasminUser, jasminSub } = require('../config/jasminConfig');
 
 // FUNC EXEMPLO
 async function getCustomer(customerId) {
@@ -17,8 +17,9 @@ async function getInvoices(){
         const token = await getAccessToken();
         console.log(token);
 
-
-        const response = await axios.get(`${jasminBaseURL}/billing/invoices/odata`, {
+        const url = `${jasminBaseURL}/${jasminUser}/${jasminSub}/billing/invoices/odata`;
+        console.log(url);
+        const response = await axios.get(`${jasminBaseURL}/${jasminUser}/${jasminSub}/billing/invoices/odata`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
