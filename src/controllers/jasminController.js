@@ -1,0 +1,1 @@
+// TODO getCustomer, createOrder, ou listInvoices (funçoes para lidar com as requests)

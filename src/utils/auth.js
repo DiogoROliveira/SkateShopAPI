@@ -1,0 +1,1 @@
+// FICHEIRO PARA incluir funções para autenticação, como geração de tokens OAuth2 necessários para chamadas na API da Jasmin.
