@@ -3,12 +3,13 @@
 
 const PORT = process.env.PORT || 3000;
 const express = require('express');
+require('dotenv').config();
 const jasminRoutes = require('./routes/jasminRoutes');
 
 
 const app = express();
 app.use(express.json());
-// app.use('/api', jasminRoutes);
+app.use('/api', jasminRoutes);
 
 
 app.get('/', (req, res) => {

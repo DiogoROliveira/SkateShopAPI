@@ -12,4 +12,25 @@ async function getCustomer(customerId) {
     });
 }
 
+async function getInvoices(){
+    try {
+        const token = await getAccessToken();
+        console.log(token);
+
+
+        const response = await axios.get(`${jasminBaseURL}/billing/invoices/odata`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log(response.data);
+        return response.data;
+        
+
+    } catch (error) {
+        console.error('Erro ao buscar faturas:', error.response ? error.response.data : error.message);
+        throw error;
+    }
+}
+
 module.exports = { getCustomer };
+module.exports = { getInvoices };
