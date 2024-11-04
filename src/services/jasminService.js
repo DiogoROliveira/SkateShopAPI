@@ -15,15 +15,12 @@ async function getCustomer(customerId) {
 async function getInvoices(){
     try {
         const token = await getAccessToken();
-        console.log(token);
-
         const url = `${jasminBaseURL}/${jasminUser}/${jasminSub}/billing/invoices/odata`;
-        console.log(url);
-        const response = await axios.get(`${jasminBaseURL}/${jasminUser}/${jasminSub}/billing/invoices/odata`, {
+        
+        const response = await axios.get(url, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log(response.data);
         return response.data;
         
 
@@ -33,5 +30,23 @@ async function getInvoices(){
     }
 }
 
+async function getSaleItems(){
+    try {
+        const token = await getAccessToken();
+        const url = `${jasminBaseURL}/${jasminUser}/${jasminSub}/salesCore/salesItems/extension/odata`;
+        
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return response.data;
+    }catch (error) {
+        console.error('Erro ao buscar itens de venda:', error.response ? error.response.data : error.message);
+        throw error;
+    }
+}
+
+
 module.exports = { getCustomer };
 module.exports = { getInvoices };
+module.exports = { getSaleItems };

@@ -7,11 +7,6 @@ let accessToken = null;
 async function getAccessToken() {
     if (accessToken) return accessToken; // returns cached token if it exists
 
-    console.log('Obtendo token de acesso...');
-    console.log(process.env.JASMIN_CLIENT_ID);
-    console.log(process.env.JASMIN_CLIENT_SECRET);
-
-
     try {
         const response = await axios.post('https://identity.primaverabss.com/connect/token', new URLSearchParams({
             grant_type: 'client_credentials',
@@ -21,9 +16,6 @@ async function getAccessToken() {
         }));
         
         accessToken = response.data.access_token;
-
-        console.log('Token de acesso obtido:', accessToken);
-
         
         setTimeout(() => { accessToken = null }, (response.data.expires_in - 60) * 1000); // clears token 1 minute before it expires
         return accessToken;
