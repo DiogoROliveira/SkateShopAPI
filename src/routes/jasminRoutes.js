@@ -10,6 +10,7 @@ const jasminController = require('../controllers/jasminController');
 
 router.get('/invoices', jasminController.getInvoicesList);
 router.get('/saleitems', jasminController.getSaleItemsList);
+router.get('/customers', jasminController.getCustomerList);
 
 
 

@@ -15,6 +15,7 @@ async function getCustomer(customerId) {
 async function getInvoices(){
     try {
         const token = await getAccessToken();
+
         const url = `${jasminBaseURL}/${jasminUser}/${jasminSub}/billing/invoices/odata`;
         
         const response = await axios.get(url, {
@@ -47,6 +48,26 @@ async function getSaleItems(){
 }
 
 
-module.exports = { getCustomer };
-module.exports = { getInvoices };
-module.exports = { getSaleItems };
+async function getCustomers() {
+    try {
+        const token = await getAccessToken();
+        const url = `${jasminBaseURL}/${jasminUser}/${jasminSub}/salesCore/customerParties/odata`;
+
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            console.error('Erro ao buscar clientes:', error.response.status, error.response.data);
+        } else {
+            console.error('Erro ao buscar clientes:', error.message);
+        }
+        throw error;
+    }
+}
+
+
+module.exports = { getCustomer, getInvoices, getSaleItems, getCustomers };
+
