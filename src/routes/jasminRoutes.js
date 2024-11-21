@@ -1,17 +1,16 @@
 // TODO adicionar rotas para a API
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const jasminController = require('../controllers/jasminController');
-
+const jasminController = require("../controllers/jasminController");
 
 // router.get('/customer', jasminController.getCustomer);
 // router.post('/order', jasminController.createOrder);
 
-router.get('/invoices', jasminController.getInvoicesList);
-router.get('/saleitems', jasminController.getSaleItemsList);
-router.get('/customers', jasminController.getCustomerList);
+router.get("/invoices", jasminController.getInvoicesList);
 
+router.get("/saleitems", jasminController.getSaleItemsList);
 
+router.get("/customers", jasminController.getCustomerList);
 
 module.exports = router;
