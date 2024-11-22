@@ -72,19 +72,24 @@ const getSaleItemsList = async (req, res) => {
 };
 
 const postStockAdjustment = async (req, res) => {
+    const { adjustmentReason, documentLines } = req.body;
+    const itemAdjustmentKey = generateItemAdjustmentKey();
+
+    // validates body of the request with joi schema
+    const { error } = schema.validate({ adjustmentReason, documentLines }, { abortEarly: false });
+
+    if (error) {
+        return res.status(400).json({
+            errors: error.details.map((err) => err.message),
+        });
+    }
+
     const body = {
-        itemAdjustmentKey: "110100010000", // TODO: generate unique key for every request
+        itemAdjustmentKey: itemAdjustmentKey.toString(),
         warehouse: "01",
-        adjustmentReason: "01", // TODO: ability to switch reason from 10 (add to stock) to 01 (remove from stock)
-        company: "DEFAULT", // Company allways DEFAULT
-        documentLines: [
-            {
-                materialsItem: "DECK", // TODO: Make this dynamic
-                quantity: 3, // This as well
-                unitPrice: { amount: 40.0 }, // Also this 💀💀
-                unit: "UN",
-            },
-        ],
+        adjustmentReason,
+        company: "DEFAULT",
+        documentLines,
     };
 
     try {
@@ -92,11 +97,65 @@ const postStockAdjustment = async (req, res) => {
             form: body,
         });
         console.log("Response:", response.data);
-        return res.status(200).json(response.data);
+        return res.status(200).json({
+            response: response.data,
+            message: "Stock changed successfully",
+            itemAdjustmentKey,
+            errors: false,
+        });
     } catch (error) {
         console.error("Error during POST:", error);
         return res.status(500).json({ error: "Error during POST" });
     }
 };
+
+// helper functions/vars
+
+const Joi = require("joi");
+
+const schema = Joi.object({
+    adjustmentReason: Joi.string().valid("01", "10").required().messages({
+        "any.required": "Missing adjustment reason",
+        "any.only": "Adjustment reason must be 01 or 10",
+    }),
+    documentLines: Joi.array()
+        .items(
+            Joi.object({
+                materialsItem: Joi.string().required().messages({
+                    "any.required": "Missing materialsItem in document line",
+                }),
+                quantity: Joi.number().greater(0).required().messages({
+                    "any.required": "Missing quantity in document line",
+                    "number.greater": "Quantity must be greater than 0 in document lines",
+                }),
+                unitPrice: Joi.object({
+                    amount: Joi.number().greater(0).required().messages({
+                        "any.required": "Missing amount in unitPrice in document line",
+                        "number.greater": "Amount in unitPrice must be greater than 0",
+                    }),
+                })
+                    .required()
+                    .messages({
+                        "any.required": "Missing unitPrice object in document line",
+                    }),
+                unit: Joi.string().equal("UN").required().messages({
+                    "any.required": "Missing unit in document line",
+                    "string.equal": "Unit must be UN in document lines",
+                }),
+            })
+        )
+        .min(1)
+        .required()
+        .messages({
+            "array.min": "No document lines provided",
+            "any.required": "Missing document lines",
+        }),
+});
+
+function generateItemAdjustmentKey() {
+    const timestamp = Date.now(); // milliseconds timestamp
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000); // number between 1000 & 9999.
+    return `${timestamp}${randomSuffix}`;
+}
 
 module.exports = { getInvoicesList, getSaleItemsList, getCustomerList, postStockAdjustment };

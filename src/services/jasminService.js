@@ -111,4 +111,10 @@ const postStockChange = async (relativeUrl, opts = {}) => {
     }
 };
 
-module.exports = { getInvoices, getSaleItems, getCustomers, fetchWithCredentials, postStockChange };
+module.exports = {
+    getInvoices,
+    getSaleItems,
+    getCustomers,
+    fetchWithCredentials,
+    postStockChange,
+};

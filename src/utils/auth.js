@@ -22,8 +22,6 @@ async function getAccessToken() {
                 accessToken = null;
             }, (response.data.expires_in - 60) * 1000); // clears token 1 minute before it expires
 
-            console.log("Token de acesso obtido com sucesso.");
-            console.log("Token de acesso:", accessToken);
             return accessToken;
         } catch (error) {
             console.error("Erro ao obter o token de acesso:", error);
