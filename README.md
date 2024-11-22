@@ -1,5 +1,5 @@
 # API Integration for Mendix and Cegid Jasmin
-## Configuration
+## **Configuration**
 Create a .env file in /src directory that follows the structure:
 ```bash
 JASMIN_BASE_URL=https://my.jasminsoftware.com/api
@@ -21,12 +21,24 @@ Install missing dependencies:
 npm isntall
 ```
 
+## **How to run**
+After cloning the repo:
+```bash
+git clone https://github.com/DiogoROliveira/SkateShopAPI.git
+```
 
+Start the express.js server in the /src directory with the command:
+
+```bash
+node app.js
+```
+This will start the server on `http://localhost:3000`
+
+After that you can test the endpoints of the API by following the link to Postman:
+
+[<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/39086830-b39f33bf-1761-4027-ae9c-926b803031d8?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39086830-b39f33bf-1761-4027-ae9c-926b803031d8%26entityType%3Dcollection%26workspaceId%3Dad19f453-e41f-430a-8210-81a09756ad72)
+
+This collection already has preset body content in each POST request but you can change it if you want to.
 
 ## TODO
-- A lot, but progress is being made (cope)
-
-- Postman StockChange test working with hardcoded body content:
-![image](https://github.com/user-attachments/assets/9aaa4c0e-6073-4b99-82e1-6f3585a02fa8)
-
-
+- Mendix Fetch API
