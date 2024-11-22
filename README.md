@@ -1,7 +1,7 @@
 # API Integration for Mendix and Cegid Jasmin
 ## **Configuration**
 Create a .env file in /src directory that follows the structure:
-```bash
+```env
 JASMIN_BASE_URL=https://my.jasminsoftware.com/api
 JASMIN_CLIENT_ID=your-client-id
 JASMIN_CLIENT_SECRET=your-client-secret
@@ -17,19 +17,19 @@ To acquire the JASMIN_CLIENT_ID and JASMIN_CLIENT_SECRET, you need to:
 When creating the App, you must set the OAuth flow as "Client Credentials" and click the "Reset Client Secret" button.
 
 Install missing dependencies:
-```bash
+```bat
 npm install
 ```
 
 ## **How to run**
 After cloning the repo:
-```bash
+```gitattributes
 git clone https://github.com/DiogoROliveira/SkateShopAPI.git
 ```
 
 Start the express.js server in the /src directory with the command:
 
-```bash
+```node
 node app.js
 ```
 This will start the server on `http://localhost:3000`
