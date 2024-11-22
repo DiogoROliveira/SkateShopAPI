@@ -1,4 +1,3 @@
-// TODO getCustomer, createOrder, ou listInvoices (funçoes para lidar com as requests)
 const { fetchWithCredentials } = require("../services/jasminService");
 
 // Products fetch and transform to ignore slop in response data 🧌

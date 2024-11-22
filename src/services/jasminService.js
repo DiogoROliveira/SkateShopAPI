@@ -1,4 +1,3 @@
-// TODO logica das chamadas a API do jasmin
 const axios = require("axios");
 const { getAccessToken } = require("../utils/auth");
 const { jasminBaseURL, jasminUser, jasminSub } = require("../config/jasminConfig");

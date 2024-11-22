@@ -1,5 +1,3 @@
-// Configura o Express, regista middlewares e rotas, e inicia o servidor.
-
 const PORT = process.env.PORT || 3000;
 const express = require("express");
 require("dotenv").config();
