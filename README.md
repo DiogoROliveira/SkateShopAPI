@@ -5,8 +5,8 @@ Create a .env file in /src directory that follows the structure:
 JASMIN_BASE_URL=https://my.jasminsoftware.com/api
 JASMIN_CLIENT_ID=your-client-id
 JASMIN_CLIENT_SECRET=your-client-secret
-JASMIN_ACCOUNT=326676
-JASMIN_SUBSCRIPTION=326676-0001
+JASMIN_ACCOUNT=327776
+JASMIN_SUBSCRIPTION=327776-0001
 ```
 
 To acquire the JASMIN_CLIENT_ID and JASMIN_CLIENT_SECRET, you need to:
@@ -24,8 +24,9 @@ npm isntall
 
 
 ## TODO
-- App only initiates server on port 3000
+- A lot, but progress is being made (cope)
 
-- Postman attempt at retrieving invoice data also gives 403
-![image](https://github.com/user-attachments/assets/031e928c-c160-40d5-ab11-b6d4724e5a29)
+- Postman StockChange test working with hardcoded body content:
+![image](https://github.com/user-attachments/assets/9aaa4c0e-6073-4b99-82e1-6f3585a02fa8)
+
 
