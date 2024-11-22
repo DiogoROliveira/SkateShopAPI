@@ -5,7 +5,7 @@ const getSaleItemsList = async (req, res) => {
     try {
         const [saleItemsHttpReq, materialItemsHttpReq] = await Promise.all([
             fetchWithCredentials("/salesCore/salesItems/extension/odata"),
-            fetchWithCredentials("/materialsCore/materialsItems/extension/odata"),
+            fetchWithCredentials("/materialsCore/materialsItems/odata"),
         ]);
 
         const salesItemsData = saleItemsHttpReq.data.items || [];
@@ -14,7 +14,9 @@ const getSaleItemsList = async (req, res) => {
         res.json(
             salesItemsData.map((salesItem) => {
                 const correspondingMaterialItem = materialItemsData.find(
-                    (materialItem) => materialItem.itemKey === salesItem.itemKey
+                    (materialItem) =>
+                        materialItem.itemKey.toLowerCase().trim() ===
+                        salesItem.itemKey.toLowerCase().trim()
                 );
 
                 const totalStock = correspondingMaterialItem
@@ -27,9 +29,13 @@ const getSaleItemsList = async (req, res) => {
                     ? salesItem["priceListLines"][0]["priceAmount"]["amount"]
                     : 0;
 
+                const description = correspondingMaterialItem
+                    ? correspondingMaterialItem.description || "Sem descrição"
+                    : "Descrição não encontrada";
+
                 return {
                     itemKey: salesItem.itemKey,
-                    description: salesItem.description,
+                    description: description,
                     price: itemPrice,
                     quantity: 1,
                     stock: totalStock,
