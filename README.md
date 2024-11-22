@@ -18,7 +18,7 @@ When creating the App, you must set the OAuth flow as "Client Credentials" and c
 
 Install missing dependencies:
 ```bash
-npm isntall
+npm install
 ```
 
 ## **How to run**
