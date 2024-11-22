@@ -8,9 +8,10 @@ const jasminController = require("../controllers/jasminController");
 // router.post('/order', jasminController.createOrder);
 
 router.get("/invoices", jasminController.getInvoicesList);
-
 router.get("/saleitems", jasminController.getSaleItemsList);
-
 router.get("/customers", jasminController.getCustomerList);
+
+// To test this endpoint you need to do it in PostMan with a POST request and "Content-Type": "application/json" header
+router.post("/stockadjustment", jasminController.postStockAdjustment);
 
 module.exports = router;

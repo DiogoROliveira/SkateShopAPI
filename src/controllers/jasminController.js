@@ -4,8 +4,10 @@ const {
     getSaleItems,
     getCustomers,
     fetchWithCredentials,
+    postStockChange,
 } = require("../services/jasminService");
 
+// TODO: Refactor this goofy ah request
 const getInvoicesList = async (req, res) => {
     try {
         const invoices = await getInvoices();
@@ -16,18 +18,7 @@ const getInvoicesList = async (req, res) => {
     }
 };
 
-/*
-const getSaleItemsList = async (req, res) => {
-    try{
-        const saleItems = await getSaleItems();
-        res.json(saleItems);
-    } catch (error) {
-        console.error('Erro ao obter itens de venda:', error);
-        res.status(500).json({ error: 'Erro ao obter itens de venda' });
-    }
-};
-*/
-
+// TODO: Refactor this goofy ah request
 const getCustomerList = async (req, res) => {
     try {
         const customers = await getCustomers();
@@ -38,6 +29,7 @@ const getCustomerList = async (req, res) => {
     }
 };
 
+// Products fetch and transform to ignore slop in response data 🧌
 const getSaleItemsList = async (req, res) => {
     try {
         const [saleItemsHttpReq, materialItemsHttpReq] = await Promise.all([
@@ -79,4 +71,32 @@ const getSaleItemsList = async (req, res) => {
     }
 };
 
-module.exports = { getInvoicesList, getSaleItemsList, getCustomerList };
+const postStockAdjustment = async (req, res) => {
+    const body = {
+        itemAdjustmentKey: "110100010000", // TODO: generate unique key for every request
+        warehouse: "01",
+        adjustmentReason: "01", // TODO: ability to switch reason from 10 (add to stock) to 01 (remove from stock)
+        company: "DEFAULT", // Company allways DEFAULT
+        documentLines: [
+            {
+                materialsItem: "DECK", // TODO: Make this dynamic
+                quantity: 3, // This as well
+                unitPrice: { amount: 40.0 }, // Also this 💀💀
+                unit: "UN",
+            },
+        ],
+    };
+
+    try {
+        const response = await postStockChange(`/materialsManagement/itemAdjustments`, {
+            form: body,
+        });
+        console.log("Response:", response.data);
+        return res.status(200).json(response.data);
+    } catch (error) {
+        console.error("Error during POST:", error);
+        return res.status(500).json({ error: "Error during POST" });
+    }
+};
+
+module.exports = { getInvoicesList, getSaleItemsList, getCustomerList, postStockAdjustment };

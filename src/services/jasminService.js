@@ -87,4 +87,28 @@ const fetchWithCredentials = async (relativeUrl, opts = {}) => {
     }
 };
 
-module.exports = { getInvoices, getSaleItems, getCustomers, fetchWithCredentials };
+const postStockChange = async (relativeUrl, opts = {}) => {
+    try {
+        const token = await getAccessToken();
+        const BASE_URL = `${jasminBaseURL}/${jasminUser}/${jasminSub}`;
+        console.log("Requesting...", BASE_URL + relativeUrl);
+
+        const form = opts.form ? JSON.stringify(opts.form) : undefined;
+
+        return axios({
+            url: BASE_URL + relativeUrl,
+            method: opts.method || "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            data: form,
+            ...opts,
+        });
+    } catch (error) {
+        console.error("Error posting data:", error.response ? error.response.data : error.message);
+        throw error;
+    }
+};
+
+module.exports = { getInvoices, getSaleItems, getCustomers, fetchWithCredentials, postStockChange };
