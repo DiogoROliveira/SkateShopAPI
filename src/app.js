@@ -1,10 +1,10 @@
 import express from 'express';
-import  clientRoute from './routes/clientRoute.js';
+import erpRoutes from './routes/erpRoutes.js';
 
 const app = express();
 app.use(express.json());
 
-app.use('/clients', clientRoute);
+app.use('/erp', erpRoutes);
 
 const port = 6000;
 app.listen(port, () => {

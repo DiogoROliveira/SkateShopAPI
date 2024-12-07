@@ -1,5 +1,7 @@
+import { getAllBills, getBill } from "../services/billService.js";
 import { getAllClients, getClientByKey, createNewClient } from "../services/clientService.js";
 
+// ========= Clients ============
 export const fetchClients = async (req, res) => {
     try {
         const clientsList = await getAllClients();
@@ -30,5 +32,15 @@ export const addNewClient = async (req, res) => {
         res.status(201).json(createdClient);
     } catch (error) {
         res.status(500).json({ message: 'Error creating client!', error: error.message });
+    }
+};
+
+// ========= Bills ============
+export const fetchBills = async (req, res) => {
+    try {
+        const billsList = await getAllBills();
+        res.status(200).json(billsList);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving bills!', error: error.message });
     }
 };

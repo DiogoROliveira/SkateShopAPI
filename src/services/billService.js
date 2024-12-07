@@ -32,18 +32,3 @@ export const getAllBills = async () => {
 
     return await fetchData(apiURL, options);
 };
-
-export const getBill = async (company, document, year, month) => {
-    const token = await getToken();
-    const apiURL = `${baseURL}/${company}/${document}/${year}/${month}`;
-
-    const options = {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    };
-
-    return await fetchData(apiURL, options);
-};
