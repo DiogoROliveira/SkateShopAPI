@@ -45,10 +45,20 @@ export async function getToken() {
         })
     });
 
+    const text = await response.text();
     if (!response.ok) {
-        throw new Error(`Error getting token: ${response.status} - ${response.text()}`);
+        throw new Error(`Error getting token: ${response.status} - ${text}`);
     }
 
+    let data;
+    try {
+        data = JSON.parse(text); // Parse the response to JSON
+    } catch (error) {
+        throw new Error(`Error parsing token response: ${text}`);
+    }
+
+    console.log("Token Response:", data); // Log for debugging
     return data.access_token;
 }
+
 
