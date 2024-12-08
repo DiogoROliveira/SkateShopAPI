@@ -1,20 +1,12 @@
-const PORT = process.env.PORT || 3000;
-const express = require("express");
-require("dotenv").config();
-const jasminRoutes = require("./routes/jasminRoutes");
+import express from 'express';
+import erpRoutes from './routes/erpRoutes.js';
 
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use("/api", jasminRoutes);
 
-app.get("/", (req, res) => {
-    res.send("Hello World!");
-});
+app.use('/erp', erpRoutes);
 
-app.listen(PORT, (error) => {
-    if (!error) {
-        console.log("Server is Successfully Running, and App is listening on port " + PORT);
-        console.log("http://localhost:3000");
-    } else console.log("Error occurred, server can't start", error);
+const port = 6000;
+app.listen(port, () => {
+  console.log(`App listening on http://localhost:${port}`);
 });
