@@ -1,5 +1,6 @@
 import { getAllBills } from "../services/billService.js";
 import { getAllClients, getClientByKey, createNewClient } from "../services/clientService.js";
+import { getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 
 // ========= Clients ============
@@ -75,5 +76,27 @@ export const fetchProductsById = async (req, res) => {
         res.status(200).json(productDetails);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving product using id!', error: error.message });
+    }
+};
+
+// ======== Orders ============
+
+export const fetchOrders = async (req, res) => {
+    try {
+        const ordersList = await getOrders();
+        res.status(200).json(ordersList);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving orders!', error: error.message });
+    }
+};
+
+export const addNewOrder = async (req, res) => {
+    const orderDetails = req.body;
+
+    try {
+        const createdOrder = await createNewClient(orderDetails);
+        res.status(201).json(createdOrder);
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating order!', error: error.message });
     }
 };
