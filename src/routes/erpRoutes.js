@@ -28,6 +28,22 @@ router.get('/clients/:key', fetchClientByKey);
 */
 
 router.post('/clients', addNewClient);
+//Cria usando:
+/*
+{
+    "id": "2b5b3c39-0de0-425e-842f-d1802d7a7bf0",
+    "name": "Soluciones Cad de Madrid, SA",
+    "email": "N/A",
+    "phone": "N/A",
+    "address": {
+        "street": "Passeo de Portugal",
+        "number": "4644",
+        "city": "Madrid",
+        "postalCode": "28004",
+        "country": "Portugal"
+    }
+}
+*/
 
 // ========= Bills ============
 router.get('/bills', fetchBills);

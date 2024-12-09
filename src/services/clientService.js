@@ -67,7 +67,7 @@ const getClientDetails = async (clientId) => {
 };
 
 // Formatar e retornar os detalhes de um cliente por sua chave
-export const getClientByKey = async (clientId) => {
+export const getClientById = async (clientId) => {
     try {
         const clientData = await getClientDetails(clientId);
         const formattedData = formatClientData(clientData);
@@ -80,12 +80,12 @@ export const getClientByKey = async (clientId) => {
 };
 
 // Criar um novo cliente
-const createClient = async (clientInfo) => {
+export const createNewClient = async (clientInfo) => {
     const token = await getToken();
     const apiURL = `${baseURL}`;
 
     // Prepara os dados antes de enviar
-    const formattedData = prepareClientData(clientInfo);
+    const newClientData = prepareClientData(clientInfo);
 
     const options = {
         method: 'POST',
@@ -93,17 +93,8 @@ const createClient = async (clientInfo) => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formattedData),
+        body: JSON.stringify(newClientData),
     };
 
     return await fetchData(apiURL, options);
-};
-
-export const createNewClient = async () => {
-    try {
-        const response = await createClient(newClientData);
-        console.log('Client created successfully:', response);
-    } catch (error) {
-        console.error('Error creating client:', error.message);
-    }
 };
