@@ -19,7 +19,7 @@ export const fetchClientByKey = async (req, res) => {
     const { key } = req.params;
 
     try {
-        const clientDetails = await getClientByKey(key);
+        const clientDetails = await getClientById(key);
         res.status(200).json(clientDetails);
     } catch (error) {
         res.status(500).json({ message: "Error retrieving client!", error: error.message });
