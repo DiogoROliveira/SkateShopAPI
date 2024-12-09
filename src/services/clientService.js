@@ -2,6 +2,38 @@ import { getToken } from '../token/token.js';
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/salesCore/customerParties`;
 
+// Formata os dados do cliente retornados pela API
+const formatClientData = (clientData) => {
+    return {
+        id: clientData.id,
+        name: clientData.name,
+        email: clientData.electronicMail || 'N/A',
+        phone: clientData.telephone || clientData.mobile || 'N/A',
+        address: {
+            street: clientData.streetName,
+            number: clientData.buildingNumber,
+            city: clientData.cityName,
+            postalCode: clientData.postalZone,
+            country: clientData.countryDescription,
+        },
+    };
+};
+
+// Prepara os dados para criar um cliente
+const prepareClientData = (clientInfo) => {
+    return {
+        name: clientInfo.name,
+        electronicMail: clientInfo.email,
+        telephone: clientInfo.phone,
+        streetName: clientInfo.address.street,
+        buildingNumber: clientInfo.address.number,
+        cityName: clientInfo.address.city,
+        postalZone: clientInfo.address.postalCode,
+        country: clientInfo.address.country === "Portugal" ? "PT" : clientInfo.address.country,
+    };
+};
+
+// Função genérica para realizar chamadas à API
 const fetchData = async (url, options) => {
     try {
         const response = await fetch(url, options);
@@ -18,9 +50,10 @@ const fetchData = async (url, options) => {
     }
 };
 
-export const getAllClients = async () => {
+// Obter os detalhes de um cliente por sua chave
+const getClientDetails = async (clientId) => {
     const token = await getToken();
-    const apiURL = `${baseURL}/odata`;
+    const apiURL = `${baseURL}/${clientId}`;
 
     const options = {
         method: 'GET',
@@ -33,24 +66,26 @@ export const getAllClients = async () => {
     return await fetchData(apiURL, options);
 };
 
-export const getClientByKey = async (clientKey) => {
-    const token = await getToken();
-    const apiURL = `${baseURL}/${clientKey}`;
+// Formatar e retornar os detalhes de um cliente por sua chave
+export const getClientByKey = async (clientId) => {
+    try {
+        const clientData = await getClientDetails(clientId);
+        const formattedData = formatClientData(clientData);
 
-    const options = {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    };
-
-    return await fetchData(apiURL, options);
+        console.log('Client Details:', formattedData);
+        return formattedData;
+    } catch (error) {
+        console.error('Error fetching client details:', error.message);
+    }
 };
 
-export const createNewClient = async (clientInfo) => {
+// Criar um novo cliente
+const createClient = async (clientInfo) => {
     const token = await getToken();
     const apiURL = `${baseURL}`;
+
+    // Prepara os dados antes de enviar
+    const formattedData = prepareClientData(clientInfo);
 
     const options = {
         method: 'POST',
@@ -58,8 +93,17 @@ export const createNewClient = async (clientInfo) => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(clientInfo),
+        body: JSON.stringify(formattedData),
     };
 
     return await fetchData(apiURL, options);
+};
+
+export const createNewClient = async () => {
+    try {
+        const response = await createClient(newClientData);
+        console.log('Client created successfully:', response);
+    } catch (error) {
+        console.error('Error creating client:', error.message);
+    }
 };

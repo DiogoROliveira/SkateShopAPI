@@ -1,19 +1,9 @@
 import { getAllBills } from "../services/billService.js";
-import { getAllClients, getClientByKey, createNewClient } from "../services/clientService.js";
+import { getClientByKey, createNewClient } from "../services/clientService.js";
 import { getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 
 // ========= Clients ============
-export const fetchClients = async (req, res) => {
-    try {
-        const clientsList = await getAllClients();
-        res.status(200).json(clientsList);
-    } catch (error) {
-        res.status(500).json({ message: 'Error retrieving clients!', error: error.message });
-    }
-};
-
-
 export const fetchClientByKey = async (req, res) => {
     const { key } = req.params;
 
@@ -24,7 +14,6 @@ export const fetchClientByKey = async (req, res) => {
         res.status(500).json({ message: 'Error retrieving client!', error: error.message });
     }
 };
-
 
 export const addNewClient = async (req, res) => {
     const clientDetails = req.body;
