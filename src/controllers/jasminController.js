@@ -3,7 +3,7 @@ import { getAllClients, getClientByKey, createNewClient } from "../services/clie
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { validateOrderRequest } from "../utils/validators/orderValidator.js";
-import { generateItemAdjustmentKey, generateSeriesNumber } from "../utils/helpers/billHelpers.js";
+import { generateSeriesNumber } from "../utils/helpers/billHelpers.js";
 
 // ========= Clients ============
 export const fetchClients = async (req, res) => {
