@@ -1,20 +1,11 @@
 import { getAllBills, postBill } from "../services/billService.js";
-import { getAllClients, getClientByKey, createNewClient } from "../services/clientService.js";
+import { getClientById, createNewClient } from "../services/clientService.js";
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { validateOrderRequest } from "../utils/validators/orderValidator.js";
 import { generateSeriesNumber } from "../utils/helpers/billHelpers.js";
 
 // ========= Clients ============
-export const fetchClients = async (req, res) => {
-    try {
-        const clientsList = await getAllClients();
-        res.status(200).json(clientsList);
-    } catch (error) {
-        res.status(500).json({ message: "Error retrieving clients!", error: error.message });
-    }
-};
-
 export const fetchClientByKey = async (req, res) => {
     const { key } = req.params;
 
@@ -48,7 +39,7 @@ export const fetchBills = async (req, res) => {
 };
 
 export const addNewBill = async (req, res) => {
-    const { documentLines, emailTo, buyerCustomerPartyName } = req.body;
+    const { documentLines, emailTo, buyerCustomerPartyName, buyerCustomerParty } = req.body;
 
     const seriesNumber = generateSeriesNumber();
     const deliveryDate = new Date();
@@ -65,7 +56,7 @@ export const addNewBill = async (req, res) => {
         currency: "EUR",
         documentDate: new Date().toISOString().split("T")[0] + "T00:00:00",
         postingDate: new Date().toISOString().split("T")[0] + "T00:00:00",
-        buyerCustomerParty: "INDIF",
+        buyerCustomerParty: buyerCustomerParty,
         buyerCustomerPartyName: buyerCustomerPartyName,
         accountingParty: "INDIF",
         exchangeRate: 1,
