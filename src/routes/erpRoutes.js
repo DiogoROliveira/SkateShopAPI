@@ -1,6 +1,7 @@
 import express from "express";
 import {
     fetchClientByKey,
+    fetchClients,
     addNewClient,
     fetchBills,
     addNewBill,
@@ -14,6 +15,7 @@ import {
 const router = express.Router();
 
 // ========= Clients ============
+router.get("/clients", fetchClients);
 router.get("/clients/:key", fetchClientByKey);
 // Retorna algo do tipo:
 /*
@@ -62,5 +64,27 @@ router.get("/products/id/:id", fetchProductsById);
 // ======== Orders ============
 router.get("/orders", fetchOrders);
 router.post("/orders", addNewOrder);
+// Exemplo de um pedido:
+/*
+{
+  "buyerCustomerParty": "INDIF",
+  "name": "Indiferenciado",
+  "address": "Rua de Cima",
+  "documentLines": [
+    {
+      "salesItem": "DECKLARGE",
+      "description": "Tabua Maple 8.0",
+      "quantity": 5,
+      "unitPrice": { 
+        "amount": 1.0,
+        "baseAmount": 1.0,
+        "reportingAmount": 1.0
+        },
+      "unit": "UN"
+    }
+  ]
+}
+
+*/
 
 export default router;

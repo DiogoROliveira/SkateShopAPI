@@ -1,9 +1,9 @@
 import { getAllBills, postBill } from "../services/billService.js";
-import { getClientById, createNewClient } from "../services/clientService.js";
+import { getClientById, createNewClient, getAllClients } from "../services/clientService.js";
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
-import { validateOrderRequest } from "../utils/validators/orderValidator.js";
 import { generateSeriesNumber } from "../utils/helpers/billHelpers.js";
+import { json } from "express";
 
 // ========= Clients ============
 export const fetchClientByKey = async (req, res) => {
@@ -28,6 +28,24 @@ export const addNewClient = async (req, res) => {
     }
 };
 
+export const fetchClients = async (req, res) => {
+    try {
+        const response = await getAllClients();
+        const clientsList = response.items;
+
+        const filteredClientsList = clientsList.map((client) => ({
+            Id: client.id,
+            name: client.name,
+            electronicMail: client.electronicMail,
+            customerPartyKey: client.partyKey,
+        }));
+
+        res.status(200).json(filteredClientsList);
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving clients!", error: error.message });
+    }
+};
+
 // ========= Bills ============
 export const fetchBills = async (req, res) => {
     try {
@@ -38,13 +56,12 @@ export const fetchBills = async (req, res) => {
     }
 };
 
-export const addNewBill = async (req, res) => {
-    const { documentLines, emailTo, buyerCustomerPartyName, buyerCustomerParty } = req.body;
+export const addNewBill = async (reqBody) => {
+    const { documentLines, emailTo, buyerCustomerPartyName, buyerCustomerParty } = reqBody;
 
     const seriesNumber = generateSeriesNumber();
     const deliveryDate = new Date();
     deliveryDate.setMonth(deliveryDate.getMonth() + 1);
-    const deliveryDateFormatted = deliveryDate.toISOString().split("T")[0] + "T00:00:00";
 
     const body = {
         documentType: "FA",
@@ -68,17 +85,7 @@ export const addNewBill = async (req, res) => {
         isSimpleInvoice: false,
         isWsCommunicable: false,
         deliveryItem: "V-VIATURA",
-        documentLines: documentLines.map((line) => ({
-            ...line,
-            unitPrice: {
-                ...line.unitPrice,
-                fractionDigits: 2,
-                symbol: "€",
-            },
-            unit: "UN",
-            itemTaxSchema: "NORMAL",
-            deliveryDate: deliveryDateFormatted,
-        })),
+        documentLines: documentLines,
         WTaxTotal: { amount: 0, baseAmount: 0, reportingAmount: 0, fractionDigits: 2, symbol: "€" },
         TotalLiability: {
             baseAmount: 0,
@@ -90,10 +97,9 @@ export const addNewBill = async (req, res) => {
     };
 
     try {
-        const createdBill = await postBill(body);
-        res.status(201).json(createdBill);
+        return await postBill(body);
     } catch (error) {
-        res.status(500).json({ message: "Error creating bill!", error: error.message });
+        throw new Error(`Error creating bill: ${error.message}`);
     }
 };
 
@@ -154,16 +160,58 @@ export const addNewOrder = async (req, res) => {
     }
 
     try {
-        validateOrderRequest(orderDetails);
+        const body = {
+            documentType: "ECL",
+            serie: "2024",
+            seriesNumber: generateSeriesNumber(),
+            documentDate: new Date().toISOString().split("T")[0] + "T00:00:00",
+            postingDate: new Date().toISOString().split("T")[0] + "T00:00:00",
+            buyerCustomerParty: orderDetails.buyerCustomerParty,
+            buyerCustomerPartyName: orderDetails.name,
+            buyerCustomerPartyAddress: orderDetails.address,
+            accountingParty: "INDIF",
+            exchangeRate: 1,
+            discount: 0,
+            currency: "EUR",
+            paymentMethod: "NUM",
+            paymentTerm: "00",
+            company: "DEFAULT",
+            deliveryTerm: "TRANSP",
+            deliveryOnInvoice: false,
+            isSeriesCommunicated: false,
+            ignoreAssociatedSalesItems: false,
+            documentLines: orderDetails.documentLines.map((line) => ({
+                ...line,
+                unitPrice: {
+                    ...line.unitPrice,
+                    fractionDigits: 2,
+                    symbol: "€",
+                },
+                unit: "UN",
+                itemTaxSchema: "NORMAL",
+            })),
+            WTaxTotal: {
+                amount: 0,
+                baseAmount: 0,
+                reportingAmount: 0,
+                fractionDigits: 2,
+                symbol: "€",
+            },
+            TotalLiability: {
+                baseAmount: 0,
+                reportingAmount: 0,
+                fractionDigits: 2,
+                symbol: "€",
+            },
+            emailTo: orderDetails.emailTo,
+        };
 
-        const customerParty = await findOrCreateCustomerParty(orderDetails.buyerCustomerParty);
+        const createdOrder = await createNewOrder(body);
 
-        const createdOrder = await createNewOrder({
+        const createdBill = await addNewBill({
             ...orderDetails,
-            customerPartyId: customerParty.id,
+            documentLines: body.documentLines,
         });
-
-        const createdBill = await addNewBill(createdOrder);
 
         res.status(201).json({
             order: createdOrder,
@@ -178,7 +226,7 @@ export const addNewOrder = async (req, res) => {
 };
 
 async function findOrCreateCustomerParty(customerPartyCode) {
-    let customerParty = await getClientByKey(customerPartyCode);
+    let customerParty = await getClientById(customerPartyCode);
 
     if (!customerParty) {
         customerParty = await addNewClient({

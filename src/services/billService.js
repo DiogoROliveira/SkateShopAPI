@@ -47,3 +47,18 @@ export const postBill = async (bill) => {
 
     return await fetchData(apiURL, options);
 };
+
+export const getBillById = async (id) => {
+    const token = await getToken();
+    const apiURL = `${baseURL}/${id}`;
+
+    const options = {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    };
+
+    return await fetchData(apiURL, options);
+};

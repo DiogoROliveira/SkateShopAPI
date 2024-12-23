@@ -1,4 +1,4 @@
-import { getToken } from '../token/token.js';
+import { getToken } from "../token/token.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/salesCore/customerParties`;
 
@@ -7,8 +7,8 @@ const formatClientData = (clientData) => {
     return {
         id: clientData.id,
         name: clientData.name,
-        email: clientData.electronicMail || 'N/A',
-        phone: clientData.telephone || clientData.mobile || 'N/A',
+        email: clientData.electronicMail || "N/A",
+        phone: clientData.telephone || clientData.mobile || "N/A",
         address: {
             street: clientData.streetName,
             number: clientData.buildingNumber,
@@ -39,8 +39,8 @@ const fetchData = async (url, options) => {
         const response = await fetch(url, options);
 
         if (!response || !response.ok) {
-            const errorMessage = response ? await response.text() : 'No response from server';
-            throw new Error(`Response Error: ${response?.status || 'unknown'} - ${errorMessage}`);
+            const errorMessage = response ? await response.text() : "No response from server";
+            throw new Error(`Response Error: ${response?.status || "unknown"} - ${errorMessage}`);
         }
 
         return await response.json();
@@ -56,10 +56,10 @@ const getClientDetails = async (clientId) => {
     const apiURL = `${baseURL}/${clientId}`;
 
     const options = {
-        method: 'GET',
+        method: "GET",
         headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
         },
     };
 
@@ -72,10 +72,10 @@ export const getClientById = async (clientId) => {
         const clientData = await getClientDetails(clientId);
         const formattedData = formatClientData(clientData);
 
-        console.log('Client Details:', formattedData);
+        console.log("Client Details:", formattedData);
         return formattedData;
     } catch (error) {
-        console.error('Error fetching client details:', error.message);
+        console.error("Error fetching client details:", error.message);
     }
 };
 
@@ -88,12 +88,28 @@ export const createNewClient = async (clientInfo) => {
     const newClientData = prepareClientData(clientInfo);
 
     const options = {
-        method: 'POST',
+        method: "POST",
         headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(newClientData),
+    };
+
+    return await fetchData(apiURL, options);
+};
+
+// Obter todas as customerParties
+export const getAllClients = async () => {
+    const token = await getToken();
+    const apiURL = `${baseURL}/odata`;
+
+    const options = {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
     };
 
     return await fetchData(apiURL, options);
