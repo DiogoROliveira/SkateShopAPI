@@ -1,4 +1,4 @@
-import { getToken } from '../token/token.js';
+import { getToken } from "../token/token.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/billing/invoices`;
 
@@ -7,8 +7,8 @@ const fetchData = async (url, options) => {
         const response = await fetch(url, options);
 
         if (!response || !response.ok) {
-            const errorMessage = response ? await response.text() : 'No response from server';
-            throw new Error(`Response Error: ${response?.status || 'unknown'} - ${errorMessage}`);
+            const errorMessage = response ? await response.text() : "No response from server";
+            throw new Error(`Response Error: ${response?.status || "unknown"} - ${errorMessage}`);
         }
 
         return await response.json();
@@ -23,10 +23,40 @@ export const getAllBills = async () => {
     const apiURL = `${baseURL}/odata`;
 
     const options = {
-        method: 'GET',
+        method: "GET",
         headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    };
+
+    return await fetchData(apiURL, options);
+};
+
+export const postBill = async (bill) => {
+    const token = await getToken();
+    const apiURL = `${baseURL}`;
+    const options = {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bill),
+    };
+
+    return await fetchData(apiURL, options);
+};
+
+export const getBillById = async (id) => {
+    const token = await getToken();
+    const apiURL = `${baseURL}/${id}`;
+
+    const options = {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
         },
     };
 
