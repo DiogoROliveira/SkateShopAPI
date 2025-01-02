@@ -45,7 +45,13 @@ export const getProductByKey = async (itemKey) => {
         },
     };
 
-    return await fetchData(apiURL, options);
+    try {
+        const data = await fetchData(apiURL, options);
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch product by key:", error.message);
+        throw new Error(`Failed to fetch product by key '${itemKey}'. ${error.message}`);
+    }
 };
 
 export const getProductById = async (id) => {

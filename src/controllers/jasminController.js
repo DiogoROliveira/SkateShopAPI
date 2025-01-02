@@ -114,10 +114,14 @@ export const fetchProducts = async (req, res) => {
 };
 
 export const fetchProductsByKey = async (req, res) => {
-    const { key } = req.params;
+    const { itemKey } = req.params;
+    if (!itemKey) {
+        return res.status(400).json({ message: "Product key is required!" });
+    }
 
+    console.log("FETCH itemKey : " + itemKey);
     try {
-        const productDetails = await getProductByKey(key);
+        const productDetails = await getProductByKey(itemKey);
         res.status(200).json(productDetails);
     } catch (error) {
         res.status(500).json({
