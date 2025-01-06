@@ -3,7 +3,7 @@ import { getClientById, createNewClient, getAllClients } from "../services/clien
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
-import { getSalesOrders, getSalesOrderById } from "../services/salesService.js";
+import { getSalesOrders, getSalesOrderById,createSalesOrder,deleteSalesOrder } from "../services/salesService.js";
 import { json } from "express";
 
 // ========= Clients ============
@@ -271,6 +271,34 @@ export const fetchSalesOrderById = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Error retrieving order by ID!",
+            error: error.message,
+        });
+    }
+};
+
+// Criar um novo pedido
+export const createNewOrder = async (req, res) => {
+    try {
+        const orderData = req.body; // Dados do pedido enviados pelo cliente
+        const newOrder = await createSalesOrder(orderData);
+        res.status(201).json(newOrder);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error creating new sales order!",
+            error: error.message,
+        });
+    }
+};
+
+// Deletar um pedido por ID
+export const deleteOrderById = async (req, res) => {
+    try {
+        const orderId = req.params.id; // ID do pedido recebido como parâmetro
+        const result = await deleteSalesOrder(orderId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error deleting sales order!",
             error: error.message,
         });
     }

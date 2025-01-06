@@ -80,3 +80,76 @@ export const getSalesOrderById = async (orderId) => {
     throw error;
   }
 };
+
+// Função para criar um novo pedido
+export const createSalesOrder = async (orderData) => {
+    const token = await getToken();
+    const apiURL = `${baseURL}`;
+
+    const options = {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+    };
+
+    try {
+        const response = await fetch(apiURL, options);
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to create order: ${response.status} - ${errorMessage}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error creating order:", error.message);
+        throw error;
+    }
+};
+
+// Função para deletar um pedido por ID
+export const deleteSalesOrder = async (orderId) => {
+    const token = await getToken();
+    const apiURL = `${baseURL}/${orderId}`;
+
+    const options = {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    };
+
+    try {
+        const response = await fetch(apiURL, options);
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to delete order: ${response.status} - ${errorMessage}`);
+        }
+
+        return { message: "Order deleted successfully" };
+    } catch (error) {
+        console.error("Error deleting order:", error.message);
+        throw error;
+    }
+};
+
+
+//Estrutura JSON para o POST
+// {
+//     "buyerCustomerParty": "Customer123",
+//     "documentType": "ECL",
+//     "documentDate": "2025-01-01T00:00:00",
+//     "company": "YourCompany",
+//     "lineItems": [
+//         {
+//             "salesItem": "Item123",
+//             "quantity": 2,
+//             "unitPrice": 50
+//         }
+//     ]
+// }

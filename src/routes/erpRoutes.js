@@ -12,6 +12,8 @@ import {
   addNewOrder,
   fetchSalesOrders,
   fetchSalesOrderById,
+  createNewOrder,
+  deleteOrderById,
 } from "../controllers/jasminController.js";
 
 const router = express.Router();
@@ -89,7 +91,11 @@ router.post("/orders", addNewOrder);
 
 */
 
+
+// Sales Order //
 router.get("/salesOrder", fetchSalesOrders); // GET /sales/orders/odata
 router.get("/salesOrder/:id", fetchSalesOrderById); // GET /sales/orders/{id}
+router.post("/salesOrders", createNewOrder); // POST /sales/orders
+router.delete("/salesOrder/:id", deleteOrderById); // DELETE /sales/orders/{id}
 
 export default router;
