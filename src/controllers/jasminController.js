@@ -3,6 +3,7 @@ import { getClientById, createNewClient, getAllClients } from "../services/clien
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
+import { getSalesOrders, getSalesOrderById } from "../services/salesService.js";
 import { json } from "express";
 
 // ========= Clients ============
@@ -240,3 +241,37 @@ async function findOrCreateCustomerParty(customerPartyCode) {
 
     return customerParty;
 }
+
+// ======== Sales Orders ============
+
+// Obter todos os pedidos
+export const fetchSalesOrders = async (req, res) => {
+    try {
+        const ordersList = await getSalesOrders();
+        res.status(200).json(ordersList);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error retrieving orders!",
+            error: error.message,
+        });
+    }
+};
+
+// Obter os detalhes de um pedido por ID
+export const fetchSalesOrderById = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return res.status(400).json({ message: "Order ID is required!" });
+    }
+
+    try {
+        const orderDetails = await getSalesOrderById(id);
+        res.status(200).json(orderDetails);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error retrieving order by ID!",
+            error: error.message,
+        });
+    }
+};

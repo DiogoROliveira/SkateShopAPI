@@ -1,15 +1,17 @@
 import express from "express";
 import {
-    fetchClientByKey,
-    fetchClients,
-    addNewClient,
-    fetchBills,
-    addNewBill,
-    fetchProducts,
-    fetchProductsByKey,
-    fetchProductsById,
-    fetchOrders,
-    addNewOrder,
+  fetchClientByKey,
+  fetchClients,
+  addNewClient,
+  fetchBills,
+  addNewBill,
+  fetchProducts,
+  fetchProductsByKey,
+  fetchProductsById,
+  fetchOrders,
+  addNewOrder,
+  fetchSalesOrders,
+  fetchSalesOrderById,
 } from "../controllers/jasminController.js";
 
 const router = express.Router();
@@ -86,5 +88,8 @@ router.post("/orders", addNewOrder);
 }
 
 */
+
+router.get("/salesOrder", fetchSalesOrders); // GET /sales/orders/odata
+router.get("/salesOrder/:id", fetchSalesOrderById); // GET /sales/orders/{id}
 
 export default router;
