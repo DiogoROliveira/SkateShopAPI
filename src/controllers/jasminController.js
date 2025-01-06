@@ -2,7 +2,7 @@ import { getAllBills, postBill } from "../services/billService.js";
 import { getClientById, createNewClient, getAllClients } from "../services/clientService.js";
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
-import { generateSeriesNumber } from "../utils/helpers/billHelpers.js";
+import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
 import { json } from "express";
 
 // ========= Clients ============
@@ -59,9 +59,8 @@ export const fetchBills = async (req, res) => {
 export const addNewBill = async (reqBody) => {
     const { documentLines, emailTo, buyerCustomerPartyName, buyerCustomerParty } = reqBody;
 
+    const formattedDate = generateDate();
     const seriesNumber = generateSeriesNumber();
-    const deliveryDate = new Date();
-    deliveryDate.setMonth(deliveryDate.getMonth() + 1);
 
     const body = {
         documentType: "FA",
@@ -71,8 +70,8 @@ export const addNewBill = async (reqBody) => {
         paymentTerm: "00",
         paymentMethod: "NUM",
         currency: "EUR",
-        documentDate: new Date().toISOString().split("T")[0] + "T00:00:00",
-        postingDate: new Date().toISOString().split("T")[0] + "T00:00:00",
+        documentDate: formattedDate,
+        postingDate: formattedDate,
         buyerCustomerParty: buyerCustomerParty,
         buyerCustomerPartyName: buyerCustomerPartyName,
         accountingParty: "INDIF",
@@ -158,6 +157,7 @@ export const fetchOrders = async (req, res) => {
 
 export const addNewOrder = async (req, res) => {
     const orderDetails = req.body;
+    const formattedDate = generateDate();
 
     if (!orderDetails) {
         return res.status(400).json({ message: "Order details are required!" });
@@ -168,8 +168,8 @@ export const addNewOrder = async (req, res) => {
             documentType: "ECL",
             serie: "2024",
             seriesNumber: generateSeriesNumber(),
-            documentDate: new Date().toISOString().split("T")[0] + "T00:00:00",
-            postingDate: new Date().toISOString().split("T")[0] + "T00:00:00",
+            documentDate: formattedDate,
+            postingDate: formattedDate,
             buyerCustomerParty: orderDetails.buyerCustomerParty,
             buyerCustomerPartyName: orderDetails.name,
             buyerCustomerPartyAddress: orderDetails.address,
@@ -182,7 +182,7 @@ export const addNewOrder = async (req, res) => {
             company: "DEFAULT",
             deliveryTerm: "TRANSP",
             deliveryOnInvoice: false,
-            isSeriesCommunicated: false,
+            isSeriesCommunicated: true,
             ignoreAssociatedSalesItems: false,
             documentLines: orderDetails.documentLines.map((line) => ({
                 ...line,

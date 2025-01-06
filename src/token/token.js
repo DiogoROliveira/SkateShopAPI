@@ -1,6 +1,6 @@
-import dotenv from 'dotenv';
-import fs from 'fs';
-import fetch from 'node-fetch';
+import dotenv from "dotenv";
+import fs from "fs";
+import fetch from "node-fetch";
 
 dotenv.config();
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -9,12 +9,12 @@ const FILE = "token.json";
 const URL = "https://identity.primaverabss.com/connect/token";
 
 function importToken() {
-    const fileData = fs.readFileSync(FILE, 'utf8');
+    const fileData = fs.readFileSync(FILE, "utf8");
     try {
         const data = JSON.parse(fileData);
         if (!data.access_token) {
             throw new Error("Token Not Found");
-        }else if (!data.expires_at) {
+        } else if (!data.expires_at) {
             throw new Error("Data Not Found");
         }
         return data;
@@ -33,16 +33,16 @@ export async function getToken() {
     }
 
     const response = await fetch(URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-            grant_type: 'client_credentials',
+            grant_type: "client_credentials",
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
-            scope: 'application'
-        })
+            scope: "application",
+        }),
     });
 
     const text = await response.text();
@@ -57,8 +57,6 @@ export async function getToken() {
         throw new Error(`Error parsing token response: ${text}`);
     }
 
-    console.log("Token Response:", data); // Log for debugging
+    // console.log("Token Response:", data); // Log for debugging
     return data.access_token;
 }
-
-
