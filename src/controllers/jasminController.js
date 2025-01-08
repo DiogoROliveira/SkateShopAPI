@@ -4,6 +4,10 @@ import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
 import { json } from "express";
+import axios from 'axios';
+import getAccessToken from '../token/rpaToken.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // ========= Clients ============
 export const fetchClientByKey = async (req, res) => {
@@ -217,6 +221,9 @@ export const addNewOrder = async (req, res) => {
             documentLines: body.documentLines,
         });
 
+        // Notify UI Path
+        await notifyUiPath(createdBill, body);
+
         res.status(201).json({
             order: createdOrder,
             bill: createdBill,
@@ -228,6 +235,68 @@ export const addNewOrder = async (req, res) => {
         });
     }
 };
+
+// UI Path NotificationTrigger
+const notifyUiPath = async (invoiceId, body) => {
+  
+    try {
+      // Obter o token de acesso
+      const accessToken = await getAccessToken();
+      const orchestratorUrl = process.env.UIPATH_ORCHESTRATOR_URL;
+      const releaseKey = process.env.UIPATH_RELEASE_KEY;
+      const orgUnitId = process.env.UIPATH_ORG_UNIT_ID;
+
+      // Mapear os itens comprados
+      const itemsList = body.documentLines.map((line) => {
+        return `
+        - ${line.description} (Quantidade: ${line.quantity}, Preço Unitário: ${line.unitPrice.amount} ${line.unitPrice.symbol}, Total: ${(line.quantity * line.unitPrice.amount).toFixed(2)} ${line.unitPrice.symbol})
+        `;
+      }).join('');
+
+      const subtotal = parseFloat(body.documentLines.reduce((acc, line) => acc + line.quantity * line.unitPrice.amount, 0));
+      const taxes = subtotal * 0.23;
+      const total = subtotal + taxes;
+  
+      const data = {
+        startInfo: {
+          ReleaseKey: releaseKey,
+          Strategy: 'ModernJobsCount',
+          RobotIds: [],
+          NoOfRobots: 1,
+          InputArguments: JSON.stringify({
+            InvoiceId: invoiceId,
+            CustomerEmail: body.emailTo,
+            CustomerName: body.buyerCustomerPartyName,
+            DocumentDate: body.documentDate,
+            PostingDate: body.postingDate,
+            CustomerAddress: body.buyerCustomerPartyAddress,
+            ItemsBought: `${itemsList}`,
+            SubTotal: subtotal.toFixed(2) + " " + body.currency,
+            Taxes: taxes.toFixed(2) + " " + body.currency,
+            TotalAmount: total.toFixed(2) + " " + body.currency,
+        })
+      }
+    };
+  
+      const response = await axios.post(orchestratorUrl, data, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'X-UIPATH-OrganizationUnitId': orgUnitId
+        },
+      });
+  
+      console.log('Notificação enviada para o UiPath!', response.data);
+    } catch (error) {
+        if (error.response) {
+        console.error('Erro na resposta da API:', error.response.data);
+        } else {
+        console.error('Erro ao notificar o UiPath:', error.message);
+        }
+        throw new Error('Erro ao iniciar o processo no UiPath.');
+    }
+  };
+
 
 async function findOrCreateCustomerParty(customerPartyCode) {
     let customerParty = await getClientById(customerPartyCode);
