@@ -304,19 +304,6 @@ const notifyUiPath = async (invoiceId, body) => {
     }
   };
 
-
-async function findOrCreateCustomerParty(customerPartyCode) {
-    let customerParty = await getClientById(customerPartyCode);
-
-    if (!customerParty) {
-        customerParty = await addNewClient({
-            partyKey: customerPartyCode,
-        });
-    }
-
-    return customerParty;
-}
-
 // ======== Sales Orders ============
 
 // Obter todos os pedidos

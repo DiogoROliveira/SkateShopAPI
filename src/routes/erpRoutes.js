@@ -78,6 +78,7 @@ router.post("/orders", addNewOrder);
   "buyerCustomerParty": "INDIF",
   "name": "Indiferenciado",
   "address": "Rua de Cima",
+  "emailTo": "youremail@gmail.com",
   "documentLines": [
     {
       "salesItem": "DECKLARGE",

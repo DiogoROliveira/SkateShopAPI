@@ -18,6 +18,16 @@ const fetchData = async (url, options) => {
     }
 };
 
+function filterProductData(itemData) {
+    return {
+        description: itemData.description || "N/A",
+        complementaryDescription: itemData.complementaryDescription || "N/A",
+        itemKey: itemData.itemKey || "N/A",
+        price: itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].calculatedUnitCost : null,
+        stock: itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].stockBalance : 0
+    }
+  }
+
 export const getStock = async () => {
     const token = await getToken();
     const apiURL = `${baseURL}/odata`;
@@ -49,7 +59,8 @@ export const getProductByKey = async (itemKey) => {
 
     try {
         const data = await fetchData(apiURL, options);
-        return data;
+        const formatedData = await filterProductData(data);
+        return formatedData;
     } catch (error) {
         console.error("Failed to fetch product by key:", error.message);
         throw new Error(`Failed to fetch product by key '${itemKey}'. ${error.message}`);
