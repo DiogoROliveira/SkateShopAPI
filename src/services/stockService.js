@@ -19,14 +19,21 @@ const fetchData = async (url, options) => {
 };
 
 function filterProductData(itemData) {
-    return {
+    // Extract necessary fields and format price
+    const priceObject = itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].calculatedUnitCost : null;
+    const formattedPrice = priceObject ? `${priceObject.amount}${priceObject.symbol || '€'}` : "0€";
+
+    // Return the filtered data
+    const filteredData = {
         description: itemData.description || "N/A",
         complementaryDescription: itemData.complementaryDescription || "N/A",
         itemKey: itemData.itemKey || "N/A",
-        price: itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].calculatedUnitCost : null,
+        price: formattedPrice,
         stock: itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].stockBalance : 0
-    }
-  }
+    };
+    return filteredData;
+}
+
 
 export const getStock = async () => {
     const token = await getToken();
