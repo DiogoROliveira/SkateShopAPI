@@ -3,6 +3,13 @@ import { getClientById, createNewClient, getAllClients } from "../services/clien
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
+import { getSalesOrders, getSalesOrderById,createSalesOrder,deleteSalesOrder } from "../services/salesService.js";
+import {
+  getPurchaseOrders,
+  getPurchaseOrderById,
+  createPurchaseOrder,
+  deletePurchaseOrder,
+} from "../services/purchasesService.js";
 import { json } from "express";
 import axios from 'axios';
 import getAccessToken from '../token/rpaToken.js';
@@ -309,3 +316,122 @@ async function findOrCreateCustomerParty(customerPartyCode) {
 
     return customerParty;
 }
+
+// ======== Sales Orders ============
+
+// Obter todos os pedidos
+export const fetchSalesOrders = async (req, res) => {
+    try {
+        const ordersList = await getSalesOrders();
+        res.status(200).json(ordersList);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error retrieving orders!",
+            error: error.message,
+        });
+    }
+};
+
+// Obter os detalhes de um pedido por ID
+export const fetchSalesOrderById = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return res.status(400).json({ message: "Order ID is required!" });
+    }
+
+    try {
+        const orderDetails = await getSalesOrderById(id);
+        res.status(200).json(orderDetails);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error retrieving order by ID!",
+            error: error.message,
+        });
+    }
+};
+
+// Criar um novo pedido
+export const createNewSalesOrder = async (req, res) => {
+    try {
+        const orderData = req.body; // Dados do pedido enviados pelo cliente
+        const newOrder = await createSalesOrder(orderData);
+        res.status(201).json(newOrder);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error creating new sales order!",
+            error: error.message,
+        });
+    }
+};
+
+// Apagar um pedido por ID
+export const deleteOrderById = async (req, res) => {
+    try {
+        const orderId = req.params.id; // ID do pedido recebido como parâmetro
+        const result = await deleteSalesOrder(orderId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error deleting sales order!",
+            error: error.message,
+        });
+    }
+};
+
+// ======== Purchase Orders ============
+
+// Obter todas as Purchase Orders
+export const fetchAllPurchaseOrders = async (req, res) => {
+  try {
+    const orders = await getPurchaseOrders();
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching purchase orders!",
+      error: error.message,
+    });
+  }
+};
+
+// Obter detalhes de uma Purchase Order por ID
+export const fetchPurchaseOrderById = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await getPurchaseOrderById(orderId);
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching purchase order by ID!",
+      error: error.message,
+    });
+  }
+};
+
+// Criar uma nova Purchase Order
+export const createNewPurchaseOrder = async (req, res) => {
+  try {
+    const orderData = req.body;
+    const newOrder = await createPurchaseOrder(orderData);
+    res.status(201).json(newOrder);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating new purchase order!",
+      error: error.message,
+    });
+  }
+};
+
+// Apagar uma Purchase Order por ID
+export const deletePurchaseOrderById = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const result = await deletePurchaseOrder(orderId);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting purchase order!",
+      error: error.message,
+    });
+  }
+};
