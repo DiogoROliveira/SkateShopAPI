@@ -1,4 +1,5 @@
 import { getToken } from "../token/token.js";
+import { formatPurchaseOrderData, formatPurchaseForPost } from "../controllers/filterController.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/purchases/orders`;
 
@@ -23,19 +24,6 @@ const fetchData = async (url, options) => {
   }
 };
 
-// Formatar os dados de um pedido
-const formatPurchaseOrderData = (orderData) => {
-  return {
-    id: orderData.id,
-    documentNumber: orderData.documentNumber,
-    supplierParty: orderData.supplierParty,
-    orderDate: orderData.documentDate,
-    totalAmount: orderData.totalAmount?.amount || 0,
-    currency: orderData.totalAmount?.currency || "N/A",
-    documentStatus: orderData.documentStatus?.description || "N/A",
-  };
-};
-
 // Obter todas as Purchase Orders (GET /purchases/orders/odata)
 export const getPurchaseOrders = async () => {
   const token = await getToken();
@@ -48,16 +36,14 @@ export const getPurchaseOrders = async () => {
       "Content-Type": "application/json",
     },
   };
-  //Para usar a funçao com filtro, remover o return e descomentar o try catch
-  return await fetchData(apiURL, options);
 
-//   try {
-//     const data = await fetchData(apiURL, options);
-//     return data.items.map(formatPurchaseOrderData); // Formatar cada pedido
-//   } catch (error) {
-//     console.error("Error fetching purchase orders:", error.message);
-//     throw error;
-//   }
+  try {
+    const data = await fetchData(apiURL, options);
+   return data.items.map(formatPurchaseOrderData); // Formatar cada pedido
+ } catch (error) {
+    console.error("Error fetching purchase orders:", error.message);
+   throw error;
+}
 };
 
 // Obter uma Purchase Order por ID (GET /purchases/orders/{id})
@@ -93,7 +79,7 @@ export const createPurchaseOrder = async (orderData) => {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(orderData),
+    body: JSON.stringify(formatPurchaseForPost(orderData)),
   };
 
   try {
@@ -146,30 +132,5 @@ export const deletePurchaseOrder = async (orderId) => {
 //
 // JSON para POST
 // {
-//   "orderId": "b17b0f4e-1d6a-4e64-8125-7c13a43451g8",
-//   "orderDate": "2024-07-12T00:00:00",
-//   "totalAmount": 1000.00, 
-//   "currency": "EUR",
-//   "documentStatus": 2,
-//   "company": "DEFAULT",
-//   "sellerSupplierParty": "0006",
-//   "documentLines": [
-//     {
-//       "version": [
-//         0,
-//         0,
-//         0,
-//         0,
-//         0,
-//         0,
-//         58,
-//         21
-//       ],
-//       "purchasesItem": "BQTULIPAS",
-//       "purchasesItemId": "75443eeb-258d-ed11-a81c-0022487f2fbc",
-//       "purchasesItemBaseEntityId": "42443eeb-258d-ed11-a81c-0022487f2fbc",
-//       "purchasesItemDescription": "BQTULIPAS"
-//     }
-//   ]
+//   "itemKey": "WHLSWHITE"
 // }
-

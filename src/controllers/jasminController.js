@@ -95,7 +95,7 @@ export const addNewBill = async (reqBody) => {
         isManual: false,
         isSimpleInvoice: false,
         isWsCommunicable: false,
-        deliveryItem: "V-VIATURA",
+        deliveryItem: "SKATEPRODUCT",
         documentLines: documentLines,
         WTaxTotal: { amount: 0, baseAmount: 0, reportingAmount: 0, fractionDigits: 2, symbol: "€" },
         TotalLiability: {
@@ -187,6 +187,20 @@ export const fetchProductsByKey = async (req, res) => {
 
             //Atualizar o stock do produto no ERP
             //processCompleteStockAdjustment(dotenv.SUBSCRIPTION, itemKey, skateStock);
+            if (skateStock == 0) {
+                //Fornecedor Entra Aqui
+                console.log("Nível de Stock Baixo!!")
+                console.log("A Repor Stock...")
+                createNewPurchaseOrder(truck.itemKey)
+                console.log("Nova Encomenda ao Fornecedor: " + truck.itemKey);
+                createNewPurchaseOrder(deck.itemKey)
+                console.log("Nova Encomenda ao Fornecedor: " + deck.itemKey);
+                createNewPurchaseOrder(wheels.itemKey)
+                console.log("Nova Encomenda ao Fornecedor: " + wheels.itemKey);
+
+
+                //Gerar Fatura
+            }
 
             console.log(`O STOCK do skate ${productDetails.itemKey} foi ajustado para: ${productDetails.stock}`);
         } else {
