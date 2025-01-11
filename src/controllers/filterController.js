@@ -1,5 +1,5 @@
 // Formata os dados do cliente retornados pela API
-const formatClientData = (clientData) => {
+export const formatClientData = (clientData) => {
     return {
         id: clientData.id,
         name: clientData.name,
@@ -16,7 +16,7 @@ const formatClientData = (clientData) => {
 };
 
 // Prepara os dados para criar um cliente
-const prepareClientData = (clientInfo) => {
+export const prepareClientData = (clientInfo) => {
     return {
         name: clientInfo.name,
         electronicMail: clientInfo.email,
@@ -30,7 +30,7 @@ const prepareClientData = (clientInfo) => {
 };
 
 // Formatar os dados de um pedido
-const formatPurchaseOrderData = (orderData) => {
+export const formatPurchaseOrderData = (orderData) => {
     return {
       id: orderData.id,
       documentNumber: orderData.documentNumber,
@@ -44,7 +44,7 @@ const formatPurchaseOrderData = (orderData) => {
 
 
 // Formatar os dados de um pedido
-const formatPurchaseForPost = (orderData) => {
+export const formatPurchaseForPost = (orderData) => {
     let supplier;
     if (orderData.itemKey == "WHLSWHITE" || orderData.itemKey == "WHLSBALCK") {
       supplier = '0018';
@@ -86,7 +86,7 @@ const formatPurchaseForPost = (orderData) => {
 
 
   // Formatar os dados de um pedido
-const formatOrderData = (orderData) => {
+export const formatOrderData = (orderData) => {
     return {
       id: orderData.id,
       documentNumber: orderData.documentNumber,
@@ -115,7 +115,7 @@ const formatOrderData = (orderData) => {
     return filteredData;
 }
 
-const filterStockData = (data) => {
+export const filterStockData = (data) => {
     const filteredItems = data.items.map((item) => {
         const totalQuantity = item.materialsItemWarehouses
             .map((warehouse) => warehouse.stockBalance || 0)
