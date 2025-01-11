@@ -21,7 +21,7 @@ const fetchData = async (url, options) => {
 function filterProductData(itemData) {
     // Extract necessary fields and format price
     const priceObject = itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].calculatedUnitCost : null;
-    const formattedPrice = priceObject ? `${priceObject.amount}${priceObject.symbol || '€'}` : "0€";
+    const formattedPrice = priceObject ? `${priceObject.amount}` : "0";
 
     // Return the filtered data
     const filteredData = {
