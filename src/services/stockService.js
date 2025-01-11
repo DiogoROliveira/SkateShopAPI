@@ -34,6 +34,27 @@ function filterProductData(itemData) {
     return filteredData;
 }
 
+const filterStockData = (data) => {
+    const filteredItems = data.items.map((item) => {
+        const totalQuantity = item.materialsItemWarehouses
+            .map((warehouse) => warehouse.stockBalance || 0)
+            .reduce((acc, curr) => acc + curr, 0);
+
+        const firstWarehouse = item.materialsItemWarehouses[0];
+
+        return {
+            itemKey: item.itemKey,
+            id: item.id,
+            name: item.description,
+            description: item.complementaryDescription || "",
+            quantity: totalQuantity,
+            unit: item.baseUnit,
+            price: firstWarehouse?.calculatedUnitCostAmount || 0,
+        };
+    });
+
+    return filteredItems;
+};
 
 export const getStock = async () => {
     const token = await getToken();
@@ -89,24 +110,3 @@ export const getProductById = async (id) => {
     return await fetchData(apiURL, options);
 };
 
-const filterStockData = (data) => {
-    const filteredItems = data.items.map((item) => {
-        const totalQuantity = item.materialsItemWarehouses
-            .map((warehouse) => warehouse.stockBalance || 0)
-            .reduce((acc, curr) => acc + curr, 0);
-
-        const firstWarehouse = item.materialsItemWarehouses[0];
-
-        return {
-            itemKey: item.itemKey,
-            id: item.id,
-            name: item.description,
-            description: item.complementaryDescription || "",
-            quantity: totalQuantity,
-            unit: item.baseUnit,
-            price: firstWarehouse?.calculatedUnitCostAmount || 0,
-        };
-    });
-
-    return filteredItems;
-};

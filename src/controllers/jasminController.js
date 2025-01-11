@@ -4,6 +4,7 @@ import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
 import { getSalesOrders, getSalesOrderById,createSalesOrder,deleteSalesOrder } from "../services/salesService.js";
+import { processCompleteStockAdjustment } from "../services/itemAdjustment.js";
 import {
   getPurchaseOrders,
   getPurchaseOrderById,
@@ -130,8 +131,69 @@ export const fetchProductsByKey = async (req, res) => {
     }
 
     console.log("FETCH itemKey : " + itemKey);
+
     try {
-        const productDetails = await getProductByKey(itemKey);
+        // Obter os detalhes do produto com base na chave
+        let productDetails = await getProductByKey(itemKey);
+
+        // Verificar se o produto é um skate e ajustar o stock
+        let truckKey, deckKey, wheelsKey;
+
+        switch (productDetails.itemKey) {
+            case 'SKTBLACK':
+                truckKey = 'TRKPRETO';
+                deckKey = 'DECKMEDIUM';
+                wheelsKey = 'WHLSWHITE';
+                break;
+
+            case 'SKTBLUE':
+                truckKey = 'TRKCINZA';
+                deckKey = 'DECKLARGE';
+                wheelsKey = 'WHLSBLACK';
+                break;
+
+            case 'SKTWHITE':
+                truckKey = 'TRKPRETO';
+                deckKey = 'DECKMEDIUM';
+                wheelsKey = 'WHLSBLACK';
+                break;
+
+            case 'SKTRED':
+                truckKey = 'TRKCINZA';
+                deckKey = 'DECKLARGE';
+                wheelsKey = 'WHLSWHITE';
+                break;
+
+            default:
+                return res.status(200).json(productDetails); // Se não for um skate completo, retorne o produto original
+        }
+
+        // Buscar as partes do skate
+        const truck = await getProductByKey(truckKey);
+        const deck = await getProductByKey(deckKey);
+        const wheels = await getProductByKey(wheelsKey);
+
+        // Se todas as partes foram encontradas, ajusta o stock do skate
+        if (truck && deck && wheels) {
+            console.log(`TRUCK STOCK: ${truck.stock}`);
+            console.log(`DECK STOCK: ${deck.stock}`);
+            console.log(`WHEELS STOCK: ${wheels.stock}`);
+
+            // Calcular o stock do skate com base nas partes
+            const skateStock = Math.min(truck.stock, deck.stock, wheels.stock);
+
+            // Atualizar o stock do produto principal (skate) para o MENDIX
+            productDetails.stock = skateStock;
+
+            //Atualizar o stock do produto no ERP
+            //processCompleteStockAdjustment(dotenv.SUBSCRIPTION, itemKey, skateStock);
+
+            console.log(`O STOCK do skate ${productDetails.itemKey} foi ajustado para: ${productDetails.stock}`);
+        } else {
+            console.log('Erro: Não foi possível recuperar os componentes do skate.');
+        }
+
+        // Retornar o produto com o stock ajustado
         res.status(200).json(productDetails);
     } catch (error) {
         res.status(500).json({
