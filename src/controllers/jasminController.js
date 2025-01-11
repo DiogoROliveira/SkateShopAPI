@@ -1,10 +1,9 @@
-import { getAllBills, postBill } from "../services/billService.js";
+import { getAllBills, postBill, postSuplierBill } from "../services/billService.js";
 import { getClientById, createNewClient, getAllClients } from "../services/clientService.js";
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
 import { getSalesOrders, getSalesOrderById,createSalesOrder,deleteSalesOrder } from "../services/salesService.js";
-import { processCompleteStockAdjustment } from "../services/itemAdjustment.js";
 import {
   getPurchaseOrders,
   getPurchaseOrderById,
@@ -109,6 +108,52 @@ export const addNewBill = async (reqBody) => {
 
     try {
         return await postBill(body);
+    } catch (error) {
+        throw new Error(`Error creating bill: ${error.message}`);
+    }
+};
+
+export const addNewSuplierBill = async (reqBody) => {
+    const { documentLines, emailTo, buyerCustomerPartyName, buyerCustomerParty } = reqBody;
+
+    const formattedDate = generateDate();
+    const seriesNumber = generateSeriesNumber();
+
+    const body = {
+        documentType: "FA",
+        serie: "2024",
+        seriesNumber: seriesNumber,
+        company: "DEFAULT",
+        paymentTerm: "00",
+        paymentMethod: "NUM",
+        currency: "EUR",
+        documentDate: formattedDate,
+        postingDate: formattedDate,
+        buyerCustomerParty: buyerCustomerParty,
+        buyerCustomerPartyName: buyerCustomerPartyName,
+        accountingParty: "INDIF",
+        exchangeRate: 1,
+        discount: 0,
+        loadingCountry: "PT",
+        unloadingCountry: "PT",
+        isExternal: false,
+        isManual: false,
+        isSimpleInvoice: false,
+        isWsCommunicable: false,
+        deliveryItem: "SKATEPART",
+        documentLines: documentLines,
+        WTaxTotal: { amount: 0, baseAmount: 0, reportingAmount: 0, fractionDigits: 2, symbol: "€" },
+        TotalLiability: {
+            baseAmount: 0,
+            reportingAmount: 0,
+            fractionDigits: 2,
+            symbol: "€",
+        },
+        emailTo: emailTo,
+    };
+
+    try {
+        return await postSuplierBill(body);
     } catch (error) {
         throw new Error(`Error creating bill: ${error.message}`);
     }
@@ -476,6 +521,16 @@ export const createNewPurchaseOrder = async (req, res) => {
   try {
     const orderData = req.body;
     const newOrder = await createPurchaseOrder(orderData);
+    
+    const createdBill = await addNewSuplierBill({
+        documentLines : newOrder.documentLines,
+        emailTo : 'tiago.passos@ipvc.pt',
+        sellerSupplierPartyName : newOrder.sellerSupplierParty,
+        sellerSupplierParty : newOrder.sellerSupplierParty,
+    });
+
+    // Notify UI Path
+    await notifyUiPath(createdBill, body);
     res.status(201).json(newOrder);
   } catch (error) {
     res.status(500).json({

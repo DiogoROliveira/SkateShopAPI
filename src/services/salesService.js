@@ -1,7 +1,20 @@
 import { getToken } from "../token/token.js";
-import { formatOrderData } from "../controllers/filterController.js";
-
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/sales/orders`;
+
+
+  // Formatar os dados de um pedido
+  export const formatOrderData = (orderData) => {
+    return {
+      id: orderData.id,
+      documentNumber: orderData.documentNumber,
+      buyerCustomerParty: orderData.buyerCustomerParty,
+      orderDate: orderData.documentDate,
+      totalAmount: orderData.totalAmount?.amount || 0,
+      currency: orderData.totalAmount?.currency || "N/A",
+      documentStatus: orderData.documentStatus?.description || "N/A",
+    };
+  };
+  
 
 // Função genérica para realizar chamadas à API
 const fetchData = async (url, options) => {

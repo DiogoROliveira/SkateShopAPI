@@ -1,7 +1,62 @@
 import { getToken } from "../token/token.js";
-import { formatPurchaseOrderData, formatPurchaseForPost } from "../controllers/filterController.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/purchases/orders`;
+
+
+// Formatar os dados de um pedido
+export const formatPurchaseOrderData = (orderData) => {
+  return {
+    id: orderData.id,
+    documentNumber: orderData.documentNumber,
+    supplierParty: orderData.supplierParty,
+    orderDate: orderData.documentDate,
+    totalAmount: orderData.totalAmount?.amount || 0,
+    currency: orderData.totalAmount?.currency || "EUR",
+    documentStatus: orderData.documentStatus?.description || "N/A",
+  };
+};
+
+
+// Formatar os dados de um pedido
+export const formatPurchaseForPost = (orderData) => {
+  let supplier;
+  if (orderData.itemKey == "WHLSWHITE" || orderData.itemKey == "WHLSBALCK") {
+    supplier = '0018';
+  }else{
+    if (orderData.itemKey == "DECKLARGE" || orderData.itemKey == "DECKMEDIUM") {
+      supplier = '0020';
+    }else{
+      if (orderData.itemKey == "TRKCINZA" || orderData.itemKey == "TRKPRETO") {
+        supplier = '0019';
+      }
+    }
+  }
+  return {
+    orderDate: new Date().toISOString().split('T')[0],  // Today's date
+    currency: 'EUR',
+    totalAmount: orderData.totalAmount?.amount || 0,
+    currency: orderData.totalAmount?.currency || "EUR",
+    documentStatus: orderData.documentStatus?.description || "2",
+    company: 'DEFAULT',
+    sellerSupplierParty: supplier, //RODAS 0018 / TRUCKS 0019 / DECKS 0020
+    documentLines: [
+      {
+        version: [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          58,
+          21
+        ],
+        purchasesItem: orderData.itemKey, //itemKey
+        purchasesItemDescription: orderData.itemKey //itemKey
+      }
+    ]
+  };
+};
 
 // Função para obter todas as Purchase Orders
 const fetchData = async (url, options) => {

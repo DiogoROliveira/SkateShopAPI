@@ -1,6 +1,7 @@
 import { getToken } from "../token/token.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/billing/invoices`;
+const suplierURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/invoiceReceipt/processOrders`
 
 const fetchData = async (url, options) => {
     try {
@@ -36,6 +37,21 @@ export const getAllBills = async () => {
 export const postBill = async (bill) => {
     const token = await getToken();
     const apiURL = `${baseURL}`;
+    const options = {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bill),
+    };
+
+    return await fetchData(apiURL, options);
+};
+
+export const postSuplierBill = async (bill) => {
+    const token = await getToken();
+    const apiURL = `${suplierURL}`;
     const options = {
         method: "POST",
         headers: {

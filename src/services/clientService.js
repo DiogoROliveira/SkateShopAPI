@@ -1,7 +1,37 @@
 import { getToken } from "../token/token.js";
-import { formatClientData, prepareClientData } from "../controllers/filterController.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/salesCore/customerParties`;
+
+// Formata os dados do cliente retornados pela API
+export const formatClientData = (clientData) => {
+    return {
+        id: clientData.id,
+        name: clientData.name,
+        email: clientData.electronicMail || "N/A",
+        phone: clientData.telephone || clientData.mobile || "N/A",
+        address: {
+            street: clientData.streetName,
+            number: clientData.buildingNumber,
+            city: clientData.cityName,
+            postalCode: clientData.postalZone,
+            country: clientData.countryDescription,
+        },
+    };
+};
+
+// Prepara os dados para criar um cliente
+export const prepareClientData = (clientInfo) => {
+    return {
+        name: clientInfo.name,
+        electronicMail: clientInfo.email,
+        telephone: clientInfo.phone,
+        streetName: clientInfo.address.street,
+        buildingNumber: clientInfo.address.number,
+        cityName: clientInfo.address.city,
+        postalZone: clientInfo.address.postalCode,
+        country: clientInfo.address.country === "Portugal" ? "PT" : clientInfo.address.country,
+    };
+};
 
 // Função genérica para realizar chamadas à API
 const fetchData = async (url, options) => {

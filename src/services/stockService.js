@@ -1,7 +1,44 @@
 import { getToken } from "../token/token.js";
-import { filterProductData, filterStockData} from "../controllers/filterController.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/materialscore/materialsitems`;
+
+function filterProductData(itemData) {
+    // Extract necessary fields and format price
+    const priceObject = itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].calculatedUnitCost : null;
+    const formattedPrice = priceObject ? `${priceObject.amount}` : "0";
+
+    // Return the filtered data
+    const filteredData = {
+        description: itemData.description || "N/A",
+        complementaryDescription: itemData.complementaryDescription || "N/A",
+        itemKey: itemData.itemKey || "N/A",
+        price: formattedPrice,
+        stock: itemData.materialsItemWarehouses ? itemData.materialsItemWarehouses[0].stockBalance : 0
+    };
+    return filteredData;
+}
+
+export const filterStockData = (data) => {
+    const filteredItems = data.items.map((item) => {
+        const totalQuantity = item.materialsItemWarehouses
+            .map((warehouse) => warehouse.stockBalance || 0)
+            .reduce((acc, curr) => acc + curr, 0);
+
+        const firstWarehouse = item.materialsItemWarehouses[0];
+
+        return {
+            itemKey: item.itemKey,
+            id: item.id,
+            name: item.description,
+            description: item.complementaryDescription || "",
+            quantity: totalQuantity,
+            unit: item.baseUnit,
+            price: firstWarehouse?.calculatedUnitCostAmount || 0,
+        };
+    });
+
+    return filteredItems;
+};
 
 const fetchData = async (url, options) => {
     try {
