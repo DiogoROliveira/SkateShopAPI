@@ -1,4 +1,4 @@
-import { getToken } from "../token/token.js"; // Assuming you already have a token function
+import { getToken } from "../token/token.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/materialsManagement/itemAdjustments`;
 
@@ -35,7 +35,9 @@ const fetchAdjustmentReasons = async () => {
         const response = await fetch(apiURL, options);
         if (!response.ok) {
             const errorMessage = await response.text();
-            console.error(`Failed to fetch adjustment reasons. Status: ${response.status}, Message: ${errorMessage}`);
+            console.error(
+                `Failed to fetch adjustment reasons. Status: ${response.status}, Message: ${errorMessage}`
+            );
             throw new Error(`Failed to fetch adjustment reasons: ${errorMessage}`);
         }
 
@@ -47,12 +49,11 @@ const fetchAdjustmentReasons = async () => {
     }
 };
 
-
 export const createItemAdjustment = async () => {
     const token = await getToken();
     const apiURL = `${baseURL}`;
 
-    const companyKey = 'DEFAULT';  // Ensure this is the correct company ID
+    const companyKey = "DEFAULT";
     console.log("Company Key used for adjustment:", companyKey);
     const adjustmentReasons = await fetchAdjustmentReasons();
     const adjustmentReason = adjustmentReasons[0]?.name;
@@ -64,21 +65,19 @@ export const createItemAdjustment = async () => {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            documentDate: new Date().toISOString().split('T')[0],  // Today's date
-            postingDate: new Date().toISOString().split('T')[0],   // Today's date for posting
-            warehouse: '01',
-            company: companyKey, // Ensure this is correct
+            documentDate: new Date().toISOString().split("T")[0], // Today's date
+            postingDate: new Date().toISOString().split("T")[0], // Today's date for posting
+            warehouse: "01",
+            company: companyKey,
             adjustmentReason: adjustmentReason,
-            remarks: 'StockAdjustment',
-            documentLines: []
-        })
+            remarks: "StockAdjustment",
+            documentLines: [],
+        }),
     };
 
     const data = await fetchData(apiURL, options);
     return data;
 };
-
-
 
 export const addItemAdjustmentLine = async (companyKey, itemAdjustmentKey, itemKey, quantity) => {
     const token = await getToken();
@@ -91,16 +90,15 @@ export const addItemAdjustmentLine = async (companyKey, itemAdjustmentKey, itemK
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            quantity: quantity,  // Ensure quantity is correctly passed here
-            unit: "UN",  // Unit of measure
-            materialsItem: itemKey  // Unique key for the material (product) being adjusted
-        })
+            quantity: quantity,
+            unit: "UN",
+            materialsItem: itemKey, // Unique key for the material (product) being adjusted
+        }),
     };
 
     const data = await fetchData(apiURL, options);
-    return data;  // Empty response if successful (204 No Content)
+    return data; // Empty response if successful (204 No Content)
 };
-
 
 export const updateItemAdjustmentLine = async (companyKey, itemAdjustmentKey, lineId, quantity) => {
     const token = await getToken();
@@ -113,12 +111,12 @@ export const updateItemAdjustmentLine = async (companyKey, itemAdjustmentKey, li
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            value: quantity  // New quantity after update
-        })
+            value: quantity, // New quantity after update
+        }),
     };
 
     const data = await fetchData(apiURL, options);
-    return data;  // Confirmation of successful update
+    return data; // Confirmation of successful update
 };
 
 export const activateItemAdjustment = async (companyKey, itemAdjustmentKey) => {
@@ -132,12 +130,12 @@ export const activateItemAdjustment = async (companyKey, itemAdjustmentKey) => {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            value: true  // Set adjustment as active
-        })
+            value: true, // Set adjustment as active
+        }),
     };
 
     const data = await fetchData(apiURL, options);
-    return data;  // Confirmation of activation
+    return data; // Confirmation of activation
 };
 
 export const setPostingDateForAdjustment = async (companyKey, itemAdjustmentKey, postingDate) => {
@@ -151,12 +149,12 @@ export const setPostingDateForAdjustment = async (companyKey, itemAdjustmentKey,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            value: postingDate  // Set the posting date
-        })
+            value: postingDate, // Set the posting date
+        }),
     };
 
     const data = await fetchData(apiURL, options);
-    return data;  // Confirmation of posting date update
+    return data; // Confirmation of posting date update
 };
 
 // Usage example
@@ -167,16 +165,41 @@ export const processStockUpdate = async (companyKey, itemKey, quantity) => {
         const itemAdjustmentKey = adjustment.itemAdjustmentKey;
 
         // Step 2: Add Item Adjustment Line for a product
-        await addItemAdjustmentLine(process.env.ACCOUNT, process.env.SUBSCRIPTION, companyKey, itemAdjustmentKey, itemKey, quantity);
+        await addItemAdjustmentLine(
+            process.env.ACCOUNT,
+            process.env.SUBSCRIPTION,
+            companyKey,
+            itemAdjustmentKey,
+            itemKey,
+            quantity
+        );
 
         // Step 3: Optionally, update quantity if needed (e.g., increasing or decreasing stock)
-        await updateItemAdjustmentLine(process.env.ACCOUNT, process.env.SUBSCRIPTION, companyKey, itemAdjustmentKey, 1, quantity);  // Assuming lineId = 1
+        await updateItemAdjustmentLine(
+            process.env.ACCOUNT,
+            process.env.SUBSCRIPTION,
+            companyKey,
+            itemAdjustmentKey,
+            1,
+            quantity
+        ); // Assuming lineId = 1
 
         // Step 4: Activate the Item Adjustment
-        await activateItemAdjustment(process.env.ACCOUNT, process.env.SUBSCRIPTION, companyKey, itemAdjustmentKey);
+        await activateItemAdjustment(
+            process.env.ACCOUNT,
+            process.env.SUBSCRIPTION,
+            companyKey,
+            itemAdjustmentKey
+        );
 
         // Step 5: Set Posting Date (optional)
-        await setPostingDateForAdjustment(process.env.ACCOUNT, process.env.SUBSCRIPTION, companyKey, itemAdjustmentKey, new Date().toISOString().split('T')[0]);
+        await setPostingDateForAdjustment(
+            process.env.ACCOUNT,
+            process.env.SUBSCRIPTION,
+            companyKey,
+            itemAdjustmentKey,
+            new Date().toISOString().split("T")[0]
+        );
 
         console.log("Stock successfully updated for item:", itemKey);
     } catch (error) {
@@ -194,11 +217,11 @@ export const fetchItemAdjustmentById = async (companyKey, itemAdjustmentKey) => 
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-        }
+        },
     };
 
     const data = await fetchData(apiURL, options);
-    return data;  // Return details of the requested item adjustment
+    return data; // Return details of the requested item adjustment
 };
 
 // Function to delete an adjustment line
@@ -211,11 +234,11 @@ export const deleteItemAdjustmentLine = async (companyKey, itemAdjustmentKey, li
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-        }
+        },
     };
 
     const data = await fetchData(apiURL, options);
-    return data;  // Return confirmation if line is deleted
+    return data; // Return confirmation if line is deleted
 };
 
 export const processCompleteStockAdjustment = async (itemKey, quantity) => {
@@ -228,12 +251,12 @@ export const processCompleteStockAdjustment = async (itemKey, quantity) => {
 
         // Passo 2: Adicionar linha de ajuste para o produto
         console.log("Adicionando linha de ajuste...");
-        await addItemAdjustmentLine(companyKey, itemAdjustmentKey, itemKey, quantity); 
+        await addItemAdjustmentLine(companyKey, itemAdjustmentKey, itemKey, quantity);
         console.log("Linha de ajuste adicionada com sucesso!");
 
         // Passo 3: Atualizar a quantidade da linha, se necessário (a quantidade pode ser alterada aqui)
         console.log("Atualizando quantidade da linha...");
-        await updateItemAdjustmentLine(companyKey, itemAdjustmentKey, 1, quantity);// Supondo que o lineId seja 1
+        await updateItemAdjustmentLine(companyKey, itemAdjustmentKey, 1, quantity); // Supondo que o lineId seja 1
         console.log("Quantidade da linha atualizada!");
 
         // Passo 4: Ativar o ajuste de item
@@ -243,8 +266,8 @@ export const processCompleteStockAdjustment = async (itemKey, quantity) => {
 
         // Passo 5: Definir a data de lançamento do ajuste
         console.log("Definindo data de lançamento...");
-        const postingDate = new Date().toISOString().split('T')[0]; // Data atual
-        await setPostingDateForAdjustment(companyKey, itemAdjustmentKey, postingDate); 
+        const postingDate = new Date().toISOString().split("T")[0]; // Data atual
+        await setPostingDateForAdjustment(companyKey, itemAdjustmentKey, postingDate);
         console.log("Data de lançamento definida!");
 
         console.log(`Ajuste de estoque completo realizado para o item: ${itemKey}`);
