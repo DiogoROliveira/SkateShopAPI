@@ -1,23 +1,23 @@
 import express from "express";
 import {
-  fetchClientByKey,
-  fetchClients,
-  addNewClient,
-  fetchBills,
-  addNewBill,
-  fetchProducts,
-  fetchProductsByKey,
-  fetchProductsById,
-  fetchOrders,
-  addNewOrder,
-  fetchSalesOrders,
-  fetchSalesOrderById,
-  createNewSalesOrder,
-  deleteOrderById,
-  fetchAllPurchaseOrders,
-  fetchPurchaseOrderById,
-  createNewPurchaseOrder,
-  deletePurchaseOrderById,
+    fetchClientByKey,
+    fetchClients,
+    addNewClient,
+    fetchBills,
+    addNewBill,
+    fetchProducts,
+    fetchProductsByKey,
+    fetchProductsById,
+    fetchOrders,
+    addNewOrder,
+    fetchSalesOrders,
+    fetchSalesOrderById,
+    createNewSalesOrder,
+    deleteOrderById,
+    fetchAllPurchaseOrders,
+    fetchPurchaseOrderById,
+    createNewPurchaseOrder,
+    deletePurchaseOrderById,
 } from "../controllers/jasminController.js";
 
 const router = express.Router();
@@ -96,7 +96,6 @@ router.post("/orders", addNewOrder);
 
 */
 
-
 // Sales Order //
 router.get("/salesOrder", fetchSalesOrders); // GET /sales/orders/odata
 router.get("/salesOrder/:id", fetchSalesOrderById); // GET /sales/orders/{id}
@@ -106,8 +105,29 @@ router.delete("/salesOrder/:id", deleteOrderById); // DELETE /sales/orders/{id}
 // ========= Purchase Orders ============
 
 router.get("/purchaseOrders", fetchAllPurchaseOrders); // Obter todas as Purchase Orders
-router.get("/purchaseOrders/:id", fetchPurchaseOrderById);// Obter detalhes de uma Purchase Order por ID
-router.post("/purchaseOrders", createNewPurchaseOrder);// Criar uma nova Purchase Order
-router.delete("/purchaseOrders/:id", deletePurchaseOrderById);// Apagar uma Purchase Order por ID
+router.get("/purchaseOrders/:id", fetchPurchaseOrderById); // Obter detalhes de uma Purchase Order por ID
+router.post("/purchaseOrders", createNewPurchaseOrder); // Criar uma nova Purchase Order
+/*
+{
+  "sellerSupplierParty": "0020",
+  "sellerSupplierPartyName": "FORN TABUAS SKATE",
+  "documentLines": [
+    {
+      "purchasesItem": "DECKLARGE",
+      "description": "Tabua Maple 8.0",
+      "quantity": 5,
+      "unitPrice": { 
+        "amount": 40.0,
+        "baseAmount": 40.0,
+        "reportingAmount": 40.0
+        },
+      "unit": "UN"
+    }
+  ],
+  "emailTo": "youremail@gmail.com"
+}
+*/
+
+router.delete("/purchaseOrders/:id", deletePurchaseOrderById); // Apagar uma Purchase Order por ID
 
 export default router;

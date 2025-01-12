@@ -1,7 +1,7 @@
 import { getToken } from "../token/token.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/billing/invoices`;
-const suplierURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/invoiceReceipt/processOrders`
+const suplierURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/invoiceReceipt/invoices`;
 
 const fetchData = async (url, options) => {
     try {

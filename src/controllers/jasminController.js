@@ -3,17 +3,27 @@ import { getClientById, createNewClient, getAllClients } from "../services/clien
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
-import { getSalesOrders, getSalesOrderById,createSalesOrder,deleteSalesOrder } from "../services/salesService.js";
 import {
-  getPurchaseOrders,
-  getPurchaseOrderById,
-  createPurchaseOrder,
-  deletePurchaseOrder,
+    getSalesOrders,
+    getSalesOrderById,
+    createSalesOrder,
+    deleteSalesOrder,
+} from "../services/salesService.js";
+import {
+    getPurchaseOrders,
+    getPurchaseOrderById,
+    createPurchaseOrder,
+    deletePurchaseOrder,
 } from "../services/purchasesService.js";
-import { json } from "express";
-import axios from 'axios';
-import getAccessToken from '../token/rpaToken.js';
-import dotenv from 'dotenv';
+import axios from "axios";
+import getAccessToken from "../token/rpaToken.js";
+import dotenv from "dotenv";
+import {
+    truckBody,
+    deckBody,
+    wheelsBody,
+    supplyBodySetter,
+} from "../utils/helpers/supplyBodyHelper.js";
 dotenv.config();
 
 // ========= Clients ============
@@ -114,32 +124,27 @@ export const addNewBill = async (reqBody) => {
 };
 
 export const addNewSuplierBill = async (reqBody) => {
-    const { documentLines, emailTo, buyerCustomerPartyName, buyerCustomerParty } = reqBody;
-
+    const { documentLines, emailTo, sellerSupplierPartyName, sellerSupplierParty } = reqBody;
     const formattedDate = generateDate();
     const seriesNumber = generateSeriesNumber();
 
     const body = {
-        documentType: "FA",
+        company: "DEFAULT",
+        documentType: "VFA",
         serie: "2024",
         seriesNumber: seriesNumber,
-        company: "DEFAULT",
+        accountingParty: sellerSupplierParty,
+        sellerSupplierParty: sellerSupplierParty,
+        sellerSupplierPartyName: sellerSupplierPartyName,
         paymentTerm: "00",
         paymentMethod: "NUM",
         currency: "EUR",
         documentDate: formattedDate,
-        postingDate: formattedDate,
-        buyerCustomerParty: buyerCustomerParty,
-        buyerCustomerPartyName: buyerCustomerPartyName,
-        accountingParty: "INDIF",
         exchangeRate: 1,
+        postingDate: formattedDate,
         discount: 0,
         loadingCountry: "PT",
         unloadingCountry: "PT",
-        isExternal: false,
-        isManual: false,
-        isSimpleInvoice: false,
-        isWsCommunicable: false,
         deliveryItem: "SKATEPART",
         documentLines: documentLines,
         WTaxTotal: { amount: 0, baseAmount: 0, reportingAmount: 0, fractionDigits: 2, symbol: "€" },
@@ -185,28 +190,28 @@ export const fetchProductsByKey = async (req, res) => {
         let truckKey, deckKey, wheelsKey;
 
         switch (productDetails.itemKey) {
-            case 'SKTBLACK':
-                truckKey = 'TRKPRETO';
-                deckKey = 'DECKMEDIUM';
-                wheelsKey = 'WHLSWHITE';
+            case "SKTBLACK":
+                truckKey = "TRKPRETO";
+                deckKey = "DECKMEDIUM";
+                wheelsKey = "WHLSWHITE";
                 break;
 
-            case 'SKTBLUE':
-                truckKey = 'TRKCINZA';
-                deckKey = 'DECKLARGE';
-                wheelsKey = 'WHLSBLACK';
+            case "SKTBLUE":
+                truckKey = "TRKCINZA";
+                deckKey = "DECKLARGE";
+                wheelsKey = "WHLSBLACK";
                 break;
 
-            case 'SKTWHITE':
-                truckKey = 'TRKPRETO';
-                deckKey = 'DECKMEDIUM';
-                wheelsKey = 'WHLSBLACK';
+            case "SKTWHITE":
+                truckKey = "TRKPRETO";
+                deckKey = "DECKMEDIUM";
+                wheelsKey = "WHLSBLACK";
                 break;
 
-            case 'SKTRED':
-                truckKey = 'TRKCINZA';
-                deckKey = 'DECKLARGE';
-                wheelsKey = 'WHLSWHITE';
+            case "SKTRED":
+                truckKey = "TRKCINZA";
+                deckKey = "DECKLARGE";
+                wheelsKey = "WHLSWHITE";
                 break;
 
             default:
@@ -231,25 +236,28 @@ export const fetchProductsByKey = async (req, res) => {
             productDetails.stock = skateStock;
 
             //Atualizar o stock do produto no ERP
-            //processCompleteStockAdjustment(dotenv.SUBSCRIPTION, itemKey, skateStock);
             if (skateStock == 0) {
                 //Fornecedor Entra Aqui
-                console.log("Nível de Stock Baixo!!")
-                console.log("A Repor Stock...")
-                createNewPurchaseOrder(truck.itemKey)
+                console.log("Nível de Stock Baixo!!");
+                console.log("A Repor Stock...");
+
+                supplyBodySetter(truckBody, truck);
+                supplyBodySetter(deckBody, deck);
+                supplyBodySetter(wheelsBody, wheels);
+
+                processPurchaseOrder(truckBody);
                 console.log("Nova Encomenda ao Fornecedor: " + truck.itemKey);
-                createNewPurchaseOrder(deck.itemKey)
+                processPurchaseOrder(deckBody);
                 console.log("Nova Encomenda ao Fornecedor: " + deck.itemKey);
-                createNewPurchaseOrder(wheels.itemKey)
+                processPurchaseOrder(wheelsBody);
                 console.log("Nova Encomenda ao Fornecedor: " + wheels.itemKey);
-
-
-                //Gerar Fatura
             }
 
-            console.log(`O STOCK do skate ${productDetails.itemKey} foi ajustado para: ${productDetails.stock}`);
+            console.log(
+                `O STOCK do skate ${productDetails.itemKey} foi ajustado para: ${productDetails.stock}`
+            );
         } else {
-            console.log('Erro: Não foi possível recuperar os componentes do skate.');
+            console.log("Erro: Não foi possível recuperar os componentes do skate.");
         }
 
         // Retornar o produto com o stock ajustado
@@ -364,67 +372,6 @@ export const addNewOrder = async (req, res) => {
     }
 };
 
-// UI Path NotificationTrigger
-const notifyUiPath = async (invoiceId, body) => {
-  
-    try {
-      // Obter o token de acesso
-      const accessToken = await getAccessToken();
-      const orchestratorUrl = process.env.UIPATH_ORCHESTRATOR_URL;
-      const releaseKey = process.env.UIPATH_RELEASE_KEY;
-      const orgUnitId = process.env.UIPATH_ORG_UNIT_ID;
-
-      // Mapear os itens comprados
-      const itemsList = body.documentLines.map((line) => {
-        return `
-        - ${line.description} (Quantidade: ${line.quantity}, Preço Unitário: ${line.unitPrice.amount} ${line.unitPrice.symbol}, Total: ${(line.quantity * line.unitPrice.amount).toFixed(2)} ${line.unitPrice.symbol})
-        `;
-      }).join('');
-
-      const subtotal = parseFloat(body.documentLines.reduce((acc, line) => acc + line.quantity * line.unitPrice.amount, 0));
-      const taxes = subtotal * 0.23;
-      const total = subtotal + taxes;
-  
-      const data = {
-        startInfo: {
-          ReleaseKey: releaseKey,
-          Strategy: 'ModernJobsCount',
-          RobotIds: [],
-          NoOfRobots: 1,
-          InputArguments: JSON.stringify({
-            InvoiceId: invoiceId,
-            CustomerEmail: body.emailTo,
-            CustomerName: body.buyerCustomerPartyName,
-            DocumentDate: body.documentDate,
-            PostingDate: body.postingDate,
-            CustomerAddress: body.buyerCustomerPartyAddress,
-            ItemsBought: `${itemsList}`,
-            SubTotal: subtotal.toFixed(2) + " " + body.currency,
-            Taxes: taxes.toFixed(2) + " " + body.currency,
-            TotalAmount: total.toFixed(2) + " " + body.currency,
-        })
-      }
-    };
-  
-      const response = await axios.post(orchestratorUrl, data, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'X-UIPATH-OrganizationUnitId': orgUnitId
-        },
-      });
-  
-      console.log('Notificação enviada para o UiPath!', response.data);
-    } catch (error) {
-        if (error.response) {
-        console.error('Erro na resposta da API:', error.response.data);
-        } else {
-        console.error('Erro ao notificar o UiPath:', error.message);
-        }
-        throw new Error('Erro ao iniciar o processo no UiPath.');
-    }
-  };
-
 // ======== Sales Orders ============
 
 // Obter todos os pedidos
@@ -491,65 +438,182 @@ export const deleteOrderById = async (req, res) => {
 
 // Obter todas as Purchase Orders
 export const fetchAllPurchaseOrders = async (req, res) => {
-  try {
-    const orders = await getPurchaseOrders();
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching purchase orders!",
-      error: error.message,
-    });
-  }
+    try {
+        const orders = await getPurchaseOrders();
+        res.status(200).json(orders);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching purchase orders!",
+            error: error.message,
+        });
+    }
 };
 
 // Obter detalhes de uma Purchase Order por ID
 export const fetchPurchaseOrderById = async (req, res) => {
-  try {
-    const orderId = req.params.id;
-    const order = await getPurchaseOrderById(orderId);
-    res.status(200).json(order);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching purchase order by ID!",
-      error: error.message,
-    });
-  }
+    try {
+        const orderId = req.params.id;
+        const order = await getPurchaseOrderById(orderId);
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching purchase order by ID!",
+            error: error.message,
+        });
+    }
 };
 
 // Criar uma nova Purchase Order
 export const createNewPurchaseOrder = async (req, res) => {
-  try {
-    const orderData = req.body;
-    const newOrder = await createPurchaseOrder(orderData);
-    
-    const createdBill = await addNewSuplierBill({
-        documentLines : newOrder.documentLines,
-        emailTo : 'tiago.passos@ipvc.pt',
-        sellerSupplierPartyName : newOrder.sellerSupplierParty,
-        sellerSupplierParty : newOrder.sellerSupplierParty,
-    });
-
-    // Notify UI Path
-    await notifyUiPath(createdBill, body);
-    res.status(201).json(newOrder);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error creating new purchase order!",
-      error: error.message,
-    });
-  }
+    try {
+        const orderData = req.body;
+        const result = await processPurchaseOrder(orderData);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error creating new purchase order!",
+            error: error.message,
+        });
+    }
 };
 
 // Apagar uma Purchase Order por ID
 export const deletePurchaseOrderById = async (req, res) => {
-  try {
-    const orderId = req.params.id;
-    const result = await deletePurchaseOrder(orderId);
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error deleting purchase order!",
-      error: error.message,
+    try {
+        const orderId = req.params.id;
+        const result = await deletePurchaseOrder(orderId);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error deleting purchase order!",
+            error: error.message,
+        });
+    }
+};
+
+const processPurchaseOrder = async (orderData) => {
+    const formattedDate = generateDate();
+
+    const body = {
+        documentType: "ECF",
+        company: "DEFAULT",
+        serie: "2024",
+        seriesNumber: generateSeriesNumber(),
+        documentDate: formattedDate,
+        postingDate: formattedDate,
+        sellerSupplierParty: orderData.sellerSupplierParty,
+        sellerSupplierPartyName: orderData.sellerSupplierPartyName,
+        accountingParty: orderData.sellerSupplierParty,
+        exchangeRate: 1,
+        discount: 0,
+        loadingCountry: "PT",
+        unloadingCountry: "PT",
+        currency: "EUR",
+        paymentMethod: "NUM",
+        paymentTerm: "00",
+        documentLines: orderData.documentLines.map((line) => ({
+            ...line,
+            unitPrice: {
+                ...line.unitPrice,
+                fractionDigits: 2,
+                symbol: "€",
+            },
+            unit: "UN",
+            itemTaxSchema: "NORMAL",
+        })),
+        WTaxTotal: {
+            amount: 0,
+            baseAmount: 0,
+            reportingAmount: 0,
+            fractionDigits: 2,
+            symbol: "€",
+        },
+        TotalLiability: {
+            baseAmount: 0,
+            reportingAmount: 0,
+            fractionDigits: 2,
+            symbol: "€",
+        },
+        emailTo: orderData.emailTo,
+    };
+
+    const newOrder = await createPurchaseOrder(body);
+    const createdBill = await addNewSuplierBill({
+        ...orderData,
+        documentLines: body.documentLines,
     });
-  }
+
+    // Notify UI Path
+    await notifyUiPath(createdBill, body);
+
+    return { newOrder, createdBill };
+};
+
+// ======== UIPATH =========
+
+const notifyUiPath = async (invoiceId, body) => {
+    try {
+        // Obter o token de acesso
+        const accessToken = await getAccessToken();
+        const orchestratorUrl = process.env.UIPATH_ORCHESTRATOR_URL;
+        const releaseKey = process.env.UIPATH_RELEASE_KEY;
+        const orgUnitId = process.env.UIPATH_ORG_UNIT_ID;
+
+        // Mapear os itens comprados
+        const itemsList = body.documentLines
+            .map((line) => {
+                return `
+        - ${line.description} (Quantidade: ${line.quantity}, Preço Unitário: ${
+                    line.unitPrice.amount
+                } ${line.unitPrice.symbol}, Total: ${(
+                    line.quantity * line.unitPrice.amount
+                ).toFixed(2)} ${line.unitPrice.symbol})
+        `;
+            })
+            .join("");
+
+        const subtotal = parseFloat(
+            body.documentLines.reduce((acc, line) => acc + line.quantity * line.unitPrice.amount, 0)
+        );
+        const taxes = subtotal * 0.23;
+        const total = subtotal + taxes;
+
+        const data = {
+            startInfo: {
+                ReleaseKey: releaseKey,
+                Strategy: "ModernJobsCount",
+                RobotIds: [],
+                NoOfRobots: 1,
+                InputArguments: JSON.stringify({
+                    InvoiceId: invoiceId,
+                    CustomerEmail: body.emailTo,
+                    CustomerName: body.buyerCustomerPartyName,
+                    DocumentDate: body.documentDate,
+                    PostingDate: body.postingDate,
+                    CustomerAddress: body.buyerCustomerPartyAddress,
+                    ItemsBought: `${itemsList}`,
+                    SubTotal: subtotal.toFixed(2) + " " + body.currency,
+                    Taxes: taxes.toFixed(2) + " " + body.currency,
+                    TotalAmount: total.toFixed(2) + " " + body.currency,
+                }),
+            },
+        };
+
+        const response = await axios.post(orchestratorUrl, data, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                "X-UIPATH-OrganizationUnitId": orgUnitId,
+            },
+        });
+
+        console.log("Notificação enviada para o UiPath!", response.data);
+    } catch (error) {
+        if (error.response) {
+            console.error("Erro na resposta da API:", error.response.data);
+        } else {
+            console.error("Erro ao notificar o UiPath:", error.message);
+        }
+        throw new Error("Erro ao iniciar o processo no UiPath.");
+    }
 };
