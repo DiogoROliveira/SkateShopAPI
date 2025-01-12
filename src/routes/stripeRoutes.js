@@ -63,3 +63,5 @@ Exemplo de resposta de erro:
 O clientSecret fornecido deve ser usado no frontend para concluir o pagamento.
 
 */
+
+export default router;
