@@ -6,30 +6,37 @@ export const createPayment = async (req, res) => {
   try {
     const { cardNumber, expMonth, expYear, cvc, amount } = req.body;
 
-    // Passo 1: Criar um token para validar os dados do cartão
-    const { id: tokenId } = await stripe.tokens.create({
-      card: {
-        number: cardNumber,
-        exp_month: expMonth,
-        exp_year: expYear,
-        cvc: cvc,
-      },
-    });
+    // Step 1: Map the card details to a predefined test token
+    let token;
 
-    // Passo 2: Criar um PaymentIntent usando o token
+    if (cardNumber === '4242424242424242') {
+      token = 'tok_visa';
+    } else if (cardNumber === '4000000000000341') {
+      token = 'tok_chargeDeclinedExpiredCard';
+    } else if (cardNumber === '4000000000000259') {
+      token = 'tok_cvcCheckFail';
+    } else if (cardNumber === '4000000000009995') {
+      token = 'tok_chargeDeclined';
+    } else {
+      return res.status(400).json({ success: false, error: 'Invalid test card number.' });
+    }
+
+    // Step 2: Create a PaymentIntent with automatic_payment_methods enabled and redirects disabled
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // valor em centavos
+      amount: amount * 100, // Convert to cents
       currency: 'eur',
       payment_method_data: {
         type: 'card',
-        card: {
-          token: tokenId,
-        },
+        card: { token },
       },
       confirm: true,
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never',
+      },
     });
 
-    // Descrição do status da transação
+    // Step 3: Handle PaymentIntent status
     let paymentStatusDescription = '';
 
     if (paymentIntent.status === 'succeeded') {
@@ -42,7 +49,6 @@ export const createPayment = async (req, res) => {
       paymentStatusDescription = 'Status desconhecido do pagamento.';
     }
 
-    // Retornar o clientSecret e a descrição detalhada do pagamento
     res.json({
       success: true,
       clientSecret: paymentIntent.client_secret,
