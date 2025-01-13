@@ -6,6 +6,7 @@ const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${proc
 export const formatClientData = (clientData) => {
     return {
         id: clientData.id,
+        customerPartyKey : clientData.customerPartyKey,
         name: clientData.name,
         email: clientData.electronicMail || "N/A",
         phone: clientData.telephone || clientData.mobile || "N/A",

@@ -299,8 +299,40 @@ export const addNewOrder = async (req, res) => {
     const orderDetails = req.body;
     const formattedDate = generateDate();
 
-    if (!orderDetails) {
-        return res.status(400).json({ message: "Order details are required!" });
+    // Validação para garantir que orderData e products estão presentes
+    if (!orderDetails || !Array.isArray(orderDetails.products)) {
+        return res.status(400).json({
+            message: "Invalid order data! 'products' must be an array."
+        });
+    }
+
+    // Criando documentLines sem usar map()
+    const documentLines = [];
+    for (const product of orderDetails.products) {
+        documentLines.push({
+            salesItem: product.ItemID,
+            description: `Product ${product.ItemID}`,
+            quantity: product.Quantity,
+            unitPrice: {
+                amount: product.SubTotal,
+                baseAmount: product.SubTotal,
+                reportingAmount: product.SubTotal,
+            },
+            unit: "UN"
+        });
+    }
+
+    const filteredOrderData = {
+        buyerCustomerParty: orderDetails.customerPartyKey,
+        name: orderDetails.name,
+        address: `${orderDetails.address} ${orderDetails.postal_code} ${orderDetails.city} ${orderDetails.country}`,
+        emailTo: orderDetails.email,
+        documentLines
+    };
+
+    // Ensure documentLines is an array before proceeding
+    if (!Array.isArray(filteredOrderData.documentLines)) {
+        return res.status(400).json({ message: "documentLines is not an array!" });
     }
 
     try {
@@ -310,9 +342,9 @@ export const addNewOrder = async (req, res) => {
             seriesNumber: generateSeriesNumber(),
             documentDate: formattedDate,
             postingDate: formattedDate,
-            buyerCustomerParty: orderDetails.buyerCustomerParty,
-            buyerCustomerPartyName: orderDetails.name,
-            buyerCustomerPartyAddress: orderDetails.address,
+            buyerCustomerParty: filteredOrderData.buyerCustomerParty,
+            buyerCustomerPartyName: filteredOrderData.name,
+            buyerCustomerPartyAddress: filteredOrderData.address,
             accountingParty: "INDIF",
             exchangeRate: 1,
             discount: 0,
@@ -324,7 +356,7 @@ export const addNewOrder = async (req, res) => {
             deliveryOnInvoice: false,
             isSeriesCommunicated: true,
             ignoreAssociatedSalesItems: false,
-            documentLines: orderDetails.documentLines.map((line) => ({
+            documentLines: filteredOrderData.documentLines.map((line) => ({
                 ...line,
                 unitPrice: {
                     ...line.unitPrice,
@@ -347,13 +379,13 @@ export const addNewOrder = async (req, res) => {
                 fractionDigits: 2,
                 symbol: "€",
             },
-            emailTo: orderDetails.emailTo,
+            emailTo: filteredOrderData.emailTo,
         };
 
         const createdOrder = await createNewOrder(body);
 
         const createdBill = await addNewBill({
-            ...orderDetails,
+            ...filteredOrderData,
             documentLines: body.documentLines,
         });
 
@@ -371,6 +403,7 @@ export const addNewOrder = async (req, res) => {
         });
     }
 };
+
 
 // ======== Sales Orders ============
 
@@ -409,39 +442,7 @@ export const fetchSalesOrderById = async (req, res) => {
 export const createNewSalesOrder = async (req, res) => {
     try {
         const orderData = req.body; // Dados do pedido enviados pelo cliente
-
-        // Validação para garantir que orderData e products estão presentes
-        if (!orderData || !Array.isArray(orderData.products)) {
-            return res.status(400).json({
-                message: "Invalid order data! 'products' must be an array."
-            });
-        }
-
-        // Criando documentLines sem usar map()
-        const documentLines = [];
-        for (const product of orderData.products) {
-            documentLines.push({
-                salesItem: product.ItemID,
-                description: `Product ${product.ItemID}`,
-                quantity: product.Quantity,
-                unitPrice: {
-                    amount: product.SubTotal,
-                    baseAmount: product.SubTotal,
-                    reportingAmount: product.SubTotal,
-                },
-                unit: "UN"
-            });
-        }
-
-        const filteredOrderData = {
-            buyerCustomerParty: `ORDER${orderData.OrderID}`,
-            name: orderData.name,
-            address: `${orderData.address} ${orderData.postal_code} ${orderData.city} ${orderData.country}`,
-            emailTo: orderData.email,
-            documentLines
-        };
-
-        const newOrder = await createSalesOrder(filteredOrderData);
+        const newOrder = await createSalesOrder(orderData);
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({
