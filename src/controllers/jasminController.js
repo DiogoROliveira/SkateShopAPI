@@ -85,8 +85,8 @@ export const addNewBill = async (reqBody) => {
 
     const body = {
         documentType: "FA",
-        serie: "2024",
-        seriesNumber: generateSeriesNumber(),
+        serie: "2025",
+        seriesNumber: seriesNumber,
         company: "DEFAULT",
         paymentMethod: "TRA",
         currency: "EUR",
@@ -126,7 +126,7 @@ export const addNewSuplierBill = async (reqBody) => {
     const body = {
         company: "DEFAULT",
         documentType: "VFA",
-        serie: "2024",
+        serie: "2025",
         seriesNumber: seriesNumber,
         accountingParty: sellerSupplierParty,
         sellerSupplierParty: sellerSupplierParty,
@@ -337,7 +337,7 @@ export const addNewOrder = async (req, res) => {
     try {
         const body = {
             documentType: "ECL",
-            serie: "2024",
+            serie: "2025",
             seriesNumber: generateSeriesNumber(),
             documentDate: formattedDate,
             postingDate: formattedDate,
