@@ -94,6 +94,25 @@ router.post("/orders", addNewOrder);
   ]
 }
 
+
+{
+  "OrderID": 1,
+  "Total": 710.0,
+  "name": "dem",
+  "email": "dem@example.com",
+  "phone_number": "123456789",
+  "address": "dem",
+  "city": "dem",
+  "postal_code": "dem",
+  "country": "dem",
+  "products": [
+    {
+      "ItemID": "SKTBLACK",
+      "Quantity": 2,
+      "SubTotal": 300.0
+    }
+  ]
+}
 */
 
 // Sales Order //

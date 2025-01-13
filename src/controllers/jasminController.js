@@ -409,33 +409,29 @@ export const fetchSalesOrderById = async (req, res) => {
 export const createNewSalesOrder = async (req, res) => {
     try {
         const orderData = req.body; // Dados do pedido enviados pelo cliente
-
-        // Filtro para o formato esperado
         const filteredOrderData = {
-            sellerSupplierParty: "001",  // O valor do OrderID adaptado
-            sellerSupplierPartyName: orderData.name || "dem",  // Nome do vendedor
+            buyerCustomerParty: `ORDER${orderData.OrderID}`,
+            name: orderData.name,
+            address: `${orderData.address} ${orderData.postal_code} ${orderData.city} ${orderData.country}`,
+            emailTo: orderData.email,
             documentLines: orderData.products.map(product => ({
-                purchasesItem: product.ItemID,
-                description: "Produto solicitado", // Descrição genérica, pode ser alterada conforme necessário
-                quantity: product.Quantity,
-                unitPrice: {
-                    amount: product.SubTotal / product.Quantity,  // Preço unitário calculado
-                    baseAmount: product.SubTotal / product.Quantity,
-                    reportingAmount: product.SubTotal / product.Quantity
-                },
-                unit: "UN"  // Unidade, se for outra, ajuste aqui
-            })),
-            emailTo: orderData.email || "dem@example.com"  // Email do cliente
-        };
+              salesItem: product.ItemID,
+              description: `Product ${product.ItemID}`,
+              quantity: product.Quantity,
+              unitPrice: {
+                amount: product.SubTotal,
+                baseAmount: product.SubTotal,
+                reportingAmount: product.SubTotal,
+              },
+              unit: "UN"
+            }))
+          };
 
-        // Chama a função que cria o pedido, passando os dados filtrados
         const newOrder = await createSalesOrder(filteredOrderData);
-
-        // Retorna a resposta
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({
-            message: "Error creating new sales order!",
+            message: "Error creating new sales order! Dados recebidos orderData:" + orderData,
             error: error.message,
         });
     }
