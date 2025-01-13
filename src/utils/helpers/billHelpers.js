@@ -4,13 +4,10 @@ export function generateSeriesNumber() {
     return `${timestamp}${randomSuffix}`;
 }
 
-export function generateDate() {
-    const today = new Date();
-    const futureDate = new Date(today.getFullYear(), 11, 6);
-    const maxDate = new Date(2024, 11, 31);
-
-    // Calcula a nova data com o limite
-    const adjustedDate = futureDate > maxDate ? maxDate : futureDate;
-    const formattedDate = adjustedDate.toISOString().split("T")[0] + "T00:00:00";
-    return formattedDate;
-}
+export const generateDate = () => {
+    const currentDate = new Date();
+    // Ensure the year is 2025
+    currentDate.setFullYear(2025);
+    return currentDate.toISOString().split('T')[0]; // returns in 'YYYY-MM-DD' format
+  }
+  

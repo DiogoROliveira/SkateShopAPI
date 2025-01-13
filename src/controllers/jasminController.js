@@ -86,24 +86,19 @@ export const addNewBill = async (reqBody) => {
     const body = {
         documentType: "FA",
         serie: "2024",
-        seriesNumber: seriesNumber,
+        seriesNumber: generateSeriesNumber(),
         company: "DEFAULT",
-        paymentTerm: "00",
-        paymentMethod: "NUM",
+        paymentMethod: "TRA",
         currency: "EUR",
         documentDate: formattedDate,
         postingDate: formattedDate,
         buyerCustomerParty: buyerCustomerParty,
         buyerCustomerPartyName: buyerCustomerPartyName,
-        accountingParty: "INDIF",
+        accountingParty: buyerCustomerParty,
         exchangeRate: 1,
         discount: 0,
         loadingCountry: "PT",
         unloadingCountry: "PT",
-        isExternal: false,
-        isManual: false,
-        isSimpleInvoice: false,
-        isWsCommunicable: false,
         deliveryItem: "SKATEPRODUCT",
         documentLines: documentLines,
         WTaxTotal: { amount: 0, baseAmount: 0, reportingAmount: 0, fractionDigits: 2, symbol: "€" },
@@ -306,17 +301,19 @@ export const addNewOrder = async (req, res) => {
         });
     }
 
+    console.log(orderDetails);
+
     // Criando documentLines sem usar map()
     const documentLines = [];
     for (const product of orderDetails.products) {
         documentLines.push({
-            salesItem: product.ItemID,
-            description: `Product ${product.ItemID}`,
-            quantity: product.Quantity,
+            salesItem: product.itemID,
+            description: `Product ${product.itemID}`,
+            quantity: product.quantity,
             unitPrice: {
-                amount: product.SubTotal,
-                baseAmount: product.SubTotal,
-                reportingAmount: product.SubTotal,
+                amount: product.subTotal,
+                baseAmount: product.subTotal,
+                reportingAmount: product.subTotal,
             },
             unit: "UN"
         });
@@ -329,6 +326,8 @@ export const addNewOrder = async (req, res) => {
         emailTo: orderDetails.email,
         documentLines
     };
+
+    console.log(filteredOrderData);
 
     // Ensure documentLines is an array before proceeding
     if (!Array.isArray(filteredOrderData.documentLines)) {
@@ -345,11 +344,11 @@ export const addNewOrder = async (req, res) => {
             buyerCustomerParty: filteredOrderData.buyerCustomerParty,
             buyerCustomerPartyName: filteredOrderData.name,
             buyerCustomerPartyAddress: filteredOrderData.address,
-            accountingParty: "INDIF",
+            accountingParty: filteredOrderData.buyerCustomerParty,
             exchangeRate: 1,
             discount: 0,
             currency: "EUR",
-            paymentMethod: "NUM",
+            paymentMethod: "TRA",
             paymentTerm: "00",
             company: "DEFAULT",
             deliveryTerm: "TRANSP",
@@ -382,11 +381,11 @@ export const addNewOrder = async (req, res) => {
             emailTo: filteredOrderData.emailTo,
         };
 
+        console.log(body);
         const createdOrder = await createNewOrder(body);
 
         const createdBill = await addNewBill({
-            ...filteredOrderData,
-            documentLines: body.documentLines,
+            ...body
         });
 
         // Notify UI Path
