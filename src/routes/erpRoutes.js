@@ -29,6 +29,7 @@ router.get("/clients/:key", fetchClientByKey);
 /*
 {
     "id": "2b5b3c39-0de0-425e-842f-d1802d7a7bf0",
+    "customerPartyKey": "ALGO"
     "name": "Soluciones Cad de Madrid, SA",
     "email": "N/A",
     "phone": "N/A",
