@@ -409,33 +409,38 @@ export const fetchSalesOrderById = async (req, res) => {
 export const createNewSalesOrder = async (req, res) => {
     try {
         const orderData = req.body; // Dados do pedido enviados pelo cliente
+        
+        // Verifique se orderData.products é um array
+        const products = Array.isArray(orderData.products) ? orderData.products : [];
+
         const filteredOrderData = {
             buyerCustomerParty: `ORDER${orderData.OrderID}`,
             name: orderData.name,
             address: `${orderData.address} ${orderData.postal_code} ${orderData.city} ${orderData.country}`,
             emailTo: orderData.email,
-            documentLines: orderData.products.map(product => ({
-              salesItem: product.ItemID,
-              description: `Product ${product.ItemID}`,
-              quantity: product.Quantity,
-              unitPrice: {
-                amount: product.SubTotal,
-                baseAmount: product.SubTotal,
-                reportingAmount: product.SubTotal,
-              },
-              unit: "UN"
+            documentLines: products.map(product => ({
+                salesItem: product.ItemID,
+                description: `Product ${product.ItemID}`,
+                quantity: product.Quantity,
+                unitPrice: {
+                    amount: product.SubTotal,
+                    baseAmount: product.SubTotal,
+                    reportingAmount: product.SubTotal,
+                },
+                unit: "UN"
             }))
-          };
+        };
 
         const newOrder = await createSalesOrder(filteredOrderData);
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({
-            message: "Error creating new sales order! Dados recebidos orderData:" + orderData,
+            message: "Error creating new sales order! Dados recebidos orderData:" + JSON.stringify(req.body),
             error: error.message,
         });
     }
 };
+
 
 
 // Apagar um pedido por ID
