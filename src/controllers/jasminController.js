@@ -409,16 +409,18 @@ export const fetchSalesOrderById = async (req, res) => {
 export const createNewSalesOrder = async (req, res) => {
     try {
         const orderData = req.body; // Dados do pedido enviados pelo cliente
-        
-        // Verifique se orderData.products é um array
-        const products = Array.isArray(orderData.products) ? orderData.products : [];
 
-        const filteredOrderData = {
-            buyerCustomerParty: `ORDER${orderData.OrderID}`,
-            name: orderData.name,
-            address: `${orderData.address} ${orderData.postal_code} ${orderData.city} ${orderData.country}`,
-            emailTo: orderData.email,
-            documentLines: products.map(product => ({
+        // Validação para garantir que orderData e products estão presentes
+        if (!orderData || !Array.isArray(orderData.products)) {
+            return res.status(400).json({
+                message: "Invalid order data! 'products' must be an array."
+            });
+        }
+
+        // Criando documentLines sem usar map()
+        const documentLines = [];
+        for (const product of orderData.products) {
+            documentLines.push({
                 salesItem: product.ItemID,
                 description: `Product ${product.ItemID}`,
                 quantity: product.Quantity,
@@ -428,14 +430,22 @@ export const createNewSalesOrder = async (req, res) => {
                     reportingAmount: product.SubTotal,
                 },
                 unit: "UN"
-            }))
+            });
+        }
+
+        const filteredOrderData = {
+            buyerCustomerParty: `ORDER${orderData.OrderID}`,
+            name: orderData.name,
+            address: `${orderData.address} ${orderData.postal_code} ${orderData.city} ${orderData.country}`,
+            emailTo: orderData.email,
+            documentLines
         };
 
         const newOrder = await createSalesOrder(filteredOrderData);
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({
-            message: "Error creating new sales order! Dados recebidos orderData:" + JSON.stringify(req.body),
+            message: "Error creating new sales order!",
             error: error.message,
         });
     }
