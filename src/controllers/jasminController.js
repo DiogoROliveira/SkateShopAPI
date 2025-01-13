@@ -406,11 +406,32 @@ export const fetchSalesOrderById = async (req, res) => {
     }
 };
 
-// Criar um novo pedido
 export const createNewSalesOrder = async (req, res) => {
     try {
         const orderData = req.body; // Dados do pedido enviados pelo cliente
-        const newOrder = await createSalesOrder(orderData);
+
+        // Filtro para o formato esperado
+        const filteredOrderData = {
+            sellerSupplierParty: "001",  // O valor do OrderID adaptado
+            sellerSupplierPartyName: orderData.name || "dem",  // Nome do vendedor
+            documentLines: orderData.products.map(product => ({
+                purchasesItem: product.ItemID,
+                description: "Produto solicitado", // Descrição genérica, pode ser alterada conforme necessário
+                quantity: product.Quantity,
+                unitPrice: {
+                    amount: product.SubTotal / product.Quantity,  // Preço unitário calculado
+                    baseAmount: product.SubTotal / product.Quantity,
+                    reportingAmount: product.SubTotal / product.Quantity
+                },
+                unit: "UN"  // Unidade, se for outra, ajuste aqui
+            })),
+            emailTo: orderData.email || "dem@example.com"  // Email do cliente
+        };
+
+        // Chama a função que cria o pedido, passando os dados filtrados
+        const newOrder = await createSalesOrder(filteredOrderData);
+
+        // Retorna a resposta
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({
@@ -419,6 +440,7 @@ export const createNewSalesOrder = async (req, res) => {
         });
     }
 };
+
 
 // Apagar um pedido por ID
 export const deleteOrderById = async (req, res) => {
