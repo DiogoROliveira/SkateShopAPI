@@ -124,6 +124,16 @@ npm start
 | POST   | /erp/bills/generateRecipt | Create receipt      |
 | POST   | /erp/bills/suplier        | Create suplier bill |
 
+### Product Routes
+
+| Method | Route                     | Description          |
+| ------ | ------------------------- | -------------------- |
+| GET    | /erp/products             | Returns all bills   |
+| GET    | /erp/products/:key        | Returns one product |
+| POST   | /erp/bills                | Create bill          |
+| POST   | /erp/bills/generateRecipt | Create receipt       |
+| POST   | /erp/bills/suplier        | Create suplier bill  |
+
 ---
 
 ## **Request Examples**
