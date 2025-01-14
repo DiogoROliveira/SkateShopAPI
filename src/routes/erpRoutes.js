@@ -18,6 +18,8 @@ import {
     fetchPurchaseOrderById,
     createNewPurchaseOrder,
     deletePurchaseOrderById,
+    getBillByIdControler,
+    createReceiptController
 } from "../controllers/jasminController.js";
 
 const router = express.Router();
@@ -63,6 +65,30 @@ router.post("/clients", addNewClient);
 
 // ========= Bills ============
 router.get("/bills", fetchBills);
+router.get("/bill/:id", getBillByIdControler);
+//Depois de fazer o Post ele dá te um id, usa esse id para fazer este get Fatura e obter estes campos
+/*
+  totalLiabilityAmount
+  documentDate
+  postingDate
+  financialAccount
+  buyerCustomerParty
+  naturalKey
+  totalLiabilityAmount
+*/
+
+router.post("/generateRecipt/:naturalKey", createReceiptController)
+//Faz agora um post com a informação recebida
+/* 
+  "totalLiabilityAmount"
+  "documentDate"
+  "postingDate"
+  "financialAccount"
+  "buyerCustomerParty"
+  "naturalKey"
+  "totalLiabilityAmount"
+*/
+
 router.post("/bills", addNewBill);
 
 // ======== Stock ============

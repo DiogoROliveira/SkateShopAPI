@@ -1,4 +1,4 @@
-import { getAllBills, postBill, postSuplierBill } from "../services/billService.js";
+import { getAllBills, postBill, postSuplierBill, createReceiptRequest, getBillById} from "../services/billService.js";
 import { getClientById, createNewClient, getAllClients } from "../services/clientService.js";
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
@@ -74,6 +74,16 @@ export const fetchBills = async (req, res) => {
         res.status(200).json(billsList);
     } catch (error) {
         res.status(500).json({ message: "Error retrieving bills!", error: error.message });
+    }
+};
+
+export const getBillByIdControler = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const bill = await getBillById(id); 
+        res.status(200).json(bill);
+    } catch (error) {
+        res.status(500).json({ message: 'rror retrieving bill!', error: error.message });
     }
 };
 
@@ -402,6 +412,50 @@ export const addNewOrder = async (req, res) => {
         });
     }
 };
+
+export const createReceiptController = async (req, res) => {
+    const requestBody = req.body;
+
+    // Validação do corpo da requisição
+    if (!requestBody || Object.keys(requestBody).length === 0) {
+        return res.status(400).json({ message: 'Invalid or missing data in the request body!' });
+    }
+
+    console.log(requestBody);
+
+    // Criação do objeto de recibo
+    const receiptData = {
+        company: 'DEFAULT',
+        documentType: 'REC',
+        documentDate: requestBody.documentDate,
+        postingDate: requestBody.postingDate,
+        financialAccount: requestBody.financialAccount,
+        note: '',
+        party: requestBody.buyerCustomerParty,
+        currency: 'EUR',
+        exchangeRate: 1,
+        paymentMethod: 'TRA',
+        checkNumber: "",
+        openAccountPostingLines: [
+            {
+                sourceDoc: requestBody.naturalKey,
+                settled: requestBody.totalLiabilityAmount,
+                discount: '0',
+            },
+        ],
+    };
+
+    try {
+        // Chamada para a função que gera os recibos
+        const receiptResult = await createReceiptRequest(receiptData);
+        res.status(200).json(receiptResult);
+    } catch (err) {
+        // Tratamento de erros
+        console.error("Error generating receipt:", err.message);
+        res.status(500).json({ message: 'Failed to generate the invoice receipt!', error: err.message });
+    }
+};
+
 
 
 // ======== Sales Orders ============
