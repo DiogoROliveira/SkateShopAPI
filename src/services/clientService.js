@@ -1,40 +1,8 @@
 import { getToken } from "../token/token.js";
+import { getClientFilter, getClientListFilter, postClientFilter } from "../utils/filters/clientFilter.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/salesCore/customerParties`;
 
-// Formata os dados do cliente retornados pela API
-export const formatClientData = (clientData) => {
-    return {
-        id: clientData.id,
-        customerPartyKey : clientData.partyKey,
-        name: clientData.name,
-        email: clientData.electronicMail || "N/A",
-        phone: clientData.telephone || clientData.mobile || "N/A",
-        address: {
-            street: clientData.streetName,
-            number: clientData.buildingNumber,
-            city: clientData.cityName,
-            postalCode: clientData.postalZone,
-            country: clientData.countryDescription,
-        },
-    };
-};
-
-// Prepara os dados para criar um cliente
-export const prepareClientData = (clientInfo) => {
-    return {
-        name: clientInfo.name,
-        electronicMail: clientInfo.email,
-        telephone: clientInfo.phone,
-        streetName: clientInfo.address.street,
-        buildingNumber: clientInfo.address.number,
-        cityName: clientInfo.address.city,
-        postalZone: clientInfo.address.postalCode,
-        country: clientInfo.address.country === "Portugal" ? "PT" : clientInfo.address.country,
-    };
-};
-
-// Função genérica para realizar chamadas à API
 const fetchData = async (url, options) => {
     try {
         const response = await fetch(url, options);
@@ -51,67 +19,71 @@ const fetchData = async (url, options) => {
     }
 };
 
-// Obter os detalhes de um cliente por sua chave
-const getClientDetails = async (clientId) => {
-    const token = await getToken();
-    const apiURL = `${baseURL}/${clientId}`;
-
-    const options = {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-    };
-
-    return await fetchData(apiURL, options);
-};
-
-// Formatar e retornar os detalhes de um cliente por sua chave
-export const getClientById = async (clientId) => {
+export const getClientByKey = async (clientKey) => {
     try {
-        const clientData = await getClientDetails(clientId);
-        const formattedData = formatClientData(clientData);
+        const token = await getToken();
+        const apiURL = `${baseURL}/${clientKey}`;
 
-        console.log("Client Details:", formattedData);
+        const options = {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        };
+
+        const clientData = await fetchData(apiURL, options);
+        const formattedData = getClientFilter(clientData);
+
         return formattedData;
     } catch (error) {
         console.error("Error fetching client details:", error.message);
     }
 };
 
-// Criar um novo cliente
-export const createNewClient = async (clientInfo) => {
-    const token = await getToken();
-    const apiURL = `${baseURL}`;
+export const postClient = async (clientBody) => {
+    try {
+        const token = await getToken();
+        const apiURL = `${baseURL}`;
 
-    // Prepara os dados antes de enviar
-    const newClientData = prepareClientData(clientInfo);
+        const formattedData = postClientFilter(clientBody);
 
-    const options = {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newClientData),
-    };
+        const options = {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formattedData),
+        };
 
-    return await fetchData(apiURL, options);
+        const response = await fetchData(apiURL, options);
+
+        return response;
+    } catch (error) {
+        console.error("Error fetching client details:", error.message);
+    }
 };
 
-// Obter todas as customerParties
 export const getAllClients = async () => {
-    const token = await getToken();
-    const apiURL = `${baseURL}/odata`;
+    try {
+        const token = await getToken();
+        const apiURL = `${baseURL}/odata`;
 
-    const options = {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-    };
+        const options = {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        };
 
-    return await fetchData(apiURL, options);
+        const response = await fetchData(apiURL, options);
+        const clientsList = response.items;
+        const formattedData = getClientListFilter(clientsList);
+
+        return formattedData;
+    } catch (error) {
+        console.error("Error fetching list of client details:", error.message);
+    }
 };

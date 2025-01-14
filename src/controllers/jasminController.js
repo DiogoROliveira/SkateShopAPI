@@ -1,5 +1,5 @@
+import { getClientByKey, postClient, getAllClients } from "../services/clientService.js";
 import { getAllBills, postBill, postSuplierBill, createReceiptRequest, getBillById} from "../services/billService.js";
-import { getClientById, createNewClient, getAllClients } from "../services/clientService.js";
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
@@ -27,43 +27,31 @@ import {
 dotenv.config();
 
 // ========= Clients ============
+export const fetchClients = async (req, res) => {
+    try {
+        const clientsList = await getAllClients();
+        res.status(200).json(clientsList);
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving clients!", error: error.message });
+    }
+};
+
 export const fetchClientByKey = async (req, res) => {
     const { key } = req.params;
-
     try {
-        const clientDetails = await getClientById(key);
-        res.status(200).json(clientDetails);
+        const client = await getClientByKey(key);
+        res.status(200).json(client);
     } catch (error) {
-        res.status(500).json({ message: "Error retrieving client!", error: error.message });
+        res.status(500).json({ message: "Error retrieving client with key!", error: error.message });
     }
 };
 
 export const addNewClient = async (req, res) => {
-    const clientDetails = req.body;
-
     try {
-        const createdClient = await createNewClient(clientDetails);
-        res.status(201).json(createdClient);
+        const clientBody = await postClient(req.body);
+        res.status(201).json(clientBody);
     } catch (error) {
-        res.status(500).json({ message: "Error creating client!", error: error.message });
-    }
-};
-
-export const fetchClients = async (req, res) => {
-    try {
-        const response = await getAllClients();
-        const clientsList = response.items;
-
-        const filteredClientsList = clientsList.map((client) => ({
-            Id: client.id,
-            name: client.name,
-            electronicMail: client.electronicMail,
-            customerPartyKey: client.partyKey,
-        }));
-
-        res.status(200).json(filteredClientsList);
-    } catch (error) {
-        res.status(500).json({ message: "Error retrieving clients!", error: error.message });
+        res.status(500).json({ message: "Error posting client!", error: error.message });
     }
 };
 
