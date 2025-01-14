@@ -1,5 +1,5 @@
 import { getClientByKey, postClient, getAllClients } from "../services/clientService.js";
-import { getAllBills, postBill, postSuplierBill, createReceiptRequest, getBillById} from "../services/billService.js";
+import { getAllBills, getBillById, postRecipt, postBill, postSuplierBill } from "../services/billService.js";
 import { createNewOrder, getOrders } from "../services/orderService.js";
 import { getProductById, getProductByKey, getStock } from "../services/stockService.js";
 import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
@@ -65,95 +65,40 @@ export const fetchBills = async (req, res) => {
     }
 };
 
-export const getBillByIdControler = async (req, res) => {
+export const fetchBillById = async (req, res) => {
     const { id } = req.params;
     try {
-        const bill = await getBillById(id); 
+        const bill = await getBillById(id);
         res.status(200).json(bill);
     } catch (error) {
-        res.status(500).json({ message: 'rror retrieving bill!', error: error.message });
+        res.status(500).json({ message: 'Error retrieving bill!', error: error.message });
     }
 };
 
-export const addNewBill = async (reqBody) => {
-    const { documentLines, emailTo, buyerCustomerPartyName, buyerCustomerParty } = reqBody;
-
-    const formattedDate = generateDate();
-    const seriesNumber = generateSeriesNumber();
-
-    const body = {
-        documentType: "FA",
-        serie: "2025",
-        seriesNumber: seriesNumber,
-        company: "DEFAULT",
-        paymentMethod: "TRA",
-        currency: "EUR",
-        documentDate: formattedDate,
-        postingDate: formattedDate,
-        buyerCustomerParty: buyerCustomerParty,
-        buyerCustomerPartyName: buyerCustomerPartyName,
-        accountingParty: buyerCustomerParty,
-        exchangeRate: 1,
-        discount: 0,
-        loadingCountry: "PT",
-        unloadingCountry: "PT",
-        deliveryItem: "SKATEPRODUCT",
-        documentLines: documentLines,
-        WTaxTotal: { amount: 0, baseAmount: 0, reportingAmount: 0, fractionDigits: 2, symbol: "€" },
-        TotalLiability: {
-            baseAmount: 0,
-            reportingAmount: 0,
-            fractionDigits: 2,
-            symbol: "€",
-        },
-        emailTo: emailTo,
-    };
-
+export const addNewReceipt = async (req, res) => {
     try {
-        return await postBill(body);
+        const receiptBody = await postRecipt(req.body);
+        res.status(201).json(receiptBody);
     } catch (error) {
-        throw new Error(`Error creating bill: ${error.message}`);
+        res.status(500).json({ message: "Error posting receipt!", error: error.message });
+    }
+}
+
+export const addNewBill = async (req, res) => {
+    try {
+        const billBody = await postBill(req.body);
+        res.status(201).json(billBody);
+    } catch (error) {
+        res.status(500).json({ message: "Error posting bill!", error: error.message });
     }
 };
 
-export const addNewSuplierBill = async (reqBody) => {
-    const { documentLines, emailTo, sellerSupplierPartyName, sellerSupplierParty } = reqBody;
-    const formattedDate = generateDate();
-    const seriesNumber = generateSeriesNumber();
-
-    const body = {
-        company: "DEFAULT",
-        documentType: "VFA",
-        serie: "2025",
-        seriesNumber: seriesNumber,
-        accountingParty: sellerSupplierParty,
-        sellerSupplierParty: sellerSupplierParty,
-        sellerSupplierPartyName: sellerSupplierPartyName,
-        paymentTerm: "00",
-        paymentMethod: "NUM",
-        currency: "EUR",
-        documentDate: formattedDate,
-        exchangeRate: 1,
-        postingDate: formattedDate,
-        discount: 0,
-        loadingCountry: "PT",
-        unloadingCountry: "PT",
-        deliveryItem: "SKATEPART",
-        documentLines: documentLines,
-        WTaxTotal: { amount: 0, baseAmount: 0, reportingAmount: 0, fractionDigits: 2, symbol: "€" },
-        TotalLiability: {
-            baseAmount: 0,
-            reportingAmount: 0,
-            fractionDigits: 2,
-            symbol: "€",
-        },
-        emailTo: emailTo,
-    };
-
+export const addNewSuplierBill = async (req, res) => {
     try {
-        return await postSuplierBill(body);
+        const billBody = await postSuplierBill(req.body);
+        res.status(201).json(billBody);
     } catch (error) {
-        throw new Error(`Error creating bill: ${error.message}`);
+        res.status(500).json({ message: "Error posting suplier bill!", error: error.message });
     }
 };
 
@@ -398,49 +343,6 @@ export const addNewOrder = async (req, res) => {
             message: "Error processing order!",
             error: error.message,
         });
-    }
-};
-
-export const createReceiptController = async (req, res) => {
-    const requestBody = req.body;
-
-    // Validação do corpo da requisição
-    if (!requestBody || Object.keys(requestBody).length === 0) {
-        return res.status(400).json({ message: 'Invalid or missing data in the request body!' });
-    }
-
-    console.log(requestBody);
-
-    // Criação do objeto de recibo
-    const receiptData = {
-        company: 'DEFAULT',
-        documentType: 'REC',
-        documentDate: requestBody.documentDate,
-        postingDate: requestBody.postingDate,
-        financialAccount: requestBody.financialAccount,
-        note: '',
-        party: requestBody.buyerCustomerParty,
-        currency: 'EUR',
-        exchangeRate: 1,
-        paymentMethod: 'TRA',
-        checkNumber: "",
-        openAccountPostingLines: [
-            {
-                sourceDoc: requestBody.naturalKey,
-                settled: requestBody.totalLiabilityAmount,
-                discount: '0',
-            },
-        ],
-    };
-
-    try {
-        // Chamada para a função que gera os recibos
-        const receiptResult = await createReceiptRequest(receiptData);
-        res.status(200).json(receiptResult);
-    } catch (err) {
-        // Tratamento de erros
-        console.error("Error generating receipt:", err.message);
-        res.status(500).json({ message: 'Failed to generate the invoice receipt!', error: err.message });
     }
 };
 

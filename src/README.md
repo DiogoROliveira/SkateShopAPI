@@ -106,11 +106,23 @@ npm start
 
 ## **API Routes**
 
+### Client Routes
+
 | Method | Route             | Description          |
 | ------ | ----------------- | -------------------- |
 | GET    | /erp/clients      | Returns all clients |
 | GET    | /erp/clients/:key | Returns one client   |
 | POST   | /erp/clients      | Create client        |
+
+### Bill Routes
+
+| Method | Route                     | Description         |
+| ------ | ------------------------- | ------------------- |
+| GET    | /erp/bills                | Returns all bills  |
+| GET    | /erp/bills/:id            | Returns one bill    |
+| POST   | /erp/bills                | Create bill         |
+| POST   | /erp/bills/generateRecipt | Create receipt      |
+| POST   | /erp/bills/suplier        | Create suplier bill |
 
 ---
 
@@ -143,7 +155,6 @@ npm start
 }
 ```
 
-
 ### Get Client by ID
 
 > **Example Request:**
@@ -171,8 +182,6 @@ npm start
 }
 ```
 
-
-
 ### Create Client
 
 > **Example Request:**
@@ -198,7 +207,20 @@ npm start
 > **Example response:**
 
 ```json
-"3d48de01-e7c1-44f5-8067-909cef5835c9"
+{
+    "id": "3a56e209-f2f4-4eb3-8e56-0a8acc202334",
+    "customerPartyKey": "0004",
+    "name": "Joaquim da Silva Araújo",
+    "email": "N/A",
+    "phone": "N/A",
+    "address": {
+        "street": "Rua dos Joaquins",
+        "number": "65",
+        "city": "Lisboa",
+        "postalCode": "1000-321",
+        "country": "Portugal"
+    }
+}
 ```
 
 ---

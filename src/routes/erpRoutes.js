@@ -1,10 +1,17 @@
 import express from "express";
 import {
+  //Clients
     fetchClientByKey,
     fetchClients,
     addNewClient,
+  
+  //Bills
     fetchBills,
+    fetchBillById,
+    addNewReceipt,
     addNewBill,
+    addNewSuplierBill,
+  
     fetchProducts,
     fetchProductsByKey,
     fetchProductsById,
@@ -17,46 +24,22 @@ import {
     fetchAllPurchaseOrders,
     fetchPurchaseOrderById,
     createNewPurchaseOrder,
-    deletePurchaseOrderById,
-    getBillByIdControler,
-    createReceiptController
+    deletePurchaseOrderById
 } from "../controllers/jasminController.js";
 
 const router = express.Router();
 
 // ========= Clients ============
-
 router.get("/clients", fetchClients);
 router.get("/clients/:key", fetchClientByKey);
 router.post("/clients", addNewClient);
 
 // ========= Bills ============
 router.get("/bills", fetchBills);
-router.get("/bill/:id", getBillByIdControler);
-//Depois de fazer o Post ele dá te um id, usa esse id para fazer este get Fatura e obter estes campos
-/*
-  totalLiabilityAmount
-  documentDate
-  postingDate
-  financialAccount
-  buyerCustomerParty
-  naturalKey
-  totalLiabilityAmount
-*/
-
-router.post("/generateRecipt/:naturalKey", createReceiptController)
-//Faz agora um post com a informação recebida
-/*
-  "totalLiabilityAmount"
-  "documentDate"
-  "postingDate"
-  "financialAccount"
-  "buyerCustomerParty"
-  "naturalKey"
-  "totalLiabilityAmount"
-*/
-
+router.get("/bills/:id", fetchBillById);
+router.post("/bills/generateRecipt", addNewReceipt)
 router.post("/bills", addNewBill);
+router.post("/bills/suplier", addNewSuplierBill);
 
 // ======== Stock ============
 router.get("/products", fetchProducts);

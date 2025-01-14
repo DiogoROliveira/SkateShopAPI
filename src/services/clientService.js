@@ -19,6 +19,29 @@ const fetchData = async (url, options) => {
     }
 };
 
+export const getAllClients = async () => {
+    try {
+        const token = await getToken();
+        const apiURL = `${baseURL}/odata`;
+
+        const options = {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        };
+
+        const response = await fetchData(apiURL, options);
+        const clientsList = response.items;
+        const formattedData = getClientListFilter(clientsList);
+
+        return formattedData;
+    } catch (error) {
+        console.error("Error fetching list of client details:", error.message);
+    }
+};
+
 export const getClientByKey = async (clientKey) => {
     try {
         const token = await getToken();
@@ -61,29 +84,6 @@ export const postClient = async (clientBody) => {
 
         return response;
     } catch (error) {
-        console.error("Error fetching client details:", error.message);
-    }
-};
-
-export const getAllClients = async () => {
-    try {
-        const token = await getToken();
-        const apiURL = `${baseURL}/odata`;
-
-        const options = {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        };
-
-        const response = await fetchData(apiURL, options);
-        const clientsList = response.items;
-        const formattedData = getClientListFilter(clientsList);
-
-        return formattedData;
-    } catch (error) {
-        console.error("Error fetching list of client details:", error.message);
+        console.error("Error posting client details:", error.message);
     }
 };
