@@ -100,6 +100,19 @@ export const fetchProductsByKey = async (req, res) => {
     const { key } = req.params;
     try {
         const product = await getProductByKey(key);
+
+        // ======= 1. Notify Admin of Low Stock =======
+        if (product.stock <= process.env.ISLOW) {
+            notifyUiPathStock(
+                process.env.ADMIN_EMAIL,
+                product.description,
+                product.complementaryDescription,
+                product.itemKey,
+                product.price,
+                product.stock,
+            );
+        }
+
         res.status(200).json(product);
     } catch (error) {
         res.status(500).json({ message: "Error retrieving product!", error: error.message });
@@ -335,6 +348,49 @@ export const notifyUiPath = async (invoiceId, body) => {
                     SubTotal: subtotal.toFixed(2) + " " + body.currency,
                     Taxes: taxes.toFixed(2) + " " + body.currency,
                     TotalAmount: total.toFixed(2) + " " + body.currency,
+                }),
+            },
+        };
+
+        const response = await axios.post(orchestratorUrl, data, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                "X-UIPATH-OrganizationUnitId": orgUnitId,
+            },
+        });
+
+    } catch (error) {
+        if (error.response) {
+            console.error("Erro na resposta da API:", error.response.data);
+        } else {
+            console.error("Erro ao notificar o UiPath:", error.message);
+        }
+        throw new Error("Erro ao iniciar o processo no UiPath.");
+    }
+};
+
+export const notifyUiPathStock = async (emailAdmin, description, complementaryDescription, itemKey, price, stock) => {
+    try {
+        // Obter o token de acesso
+        const accessToken = await getAccessToken();
+        const orchestratorUrl = process.env.UIPATH_ORCHESTRATOR_URL;
+        const releaseKey = process.env.UIPATH_RELEASE_KEY_STOCK;
+        const orgUnitId = process.env.UIPATH_ORG_UNIT_ID;
+
+        const data = {
+            startInfo: {
+                ReleaseKey: releaseKey,
+                Strategy: "ModernJobsCount",
+                RobotIds: [],
+                NoOfRobots: 1,
+                InputArguments: JSON.stringify({
+                    EmailAdmin: emailAdmin,
+                    Description: description,
+                    ComplementaryDescription: complementaryDescription,
+                    ItemKey: itemKey,
+                    Price: price,
+                    Stock: stock
                 }),
             },
         };
