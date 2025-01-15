@@ -144,19 +144,19 @@ export const clientPurchaseProcess = async (req, res) => {
 
     try {
         // ======= 1. Create a new order =======
-        const orderResponse = await axios.post("http://localhost:6000/erp/orders", orderData);
+        const orderResponse = await axios.post("https://skateshopapi-ereq.onrender.com/erp/orders", orderData);
 
         // ======= 2. Fetch the order by ID =======
-        const orderDetailsResponse = await axios.get(`http://localhost:6000/erp/orders/${orderResponse.data}`);
+        const orderDetailsResponse = await axios.get(`https://skateshopapi-ereq.onrender.com/erp/orders/${orderResponse.data}`);
 
         // ======= 3. Create a new bill =======
-        const billResponse = await axios.post("http://localhost:6000/erp/bills", orderDetailsResponse.data);
+        const billResponse = await axios.post("https://skateshopapi-ereq.onrender.com/erp/bills", orderDetailsResponse.data);
 
         // ======= 4. Fetch the bill by ID =======
-        const billDetailsResponse = await axios.get(`http://localhost:6000/erp/bills/${billResponse.data}`);
+        const billDetailsResponse = await axios.get(`https://skateshopapi-ereq.onrender.com/erp/bills/${billResponse.data}`);
 
         // ======= 5. Generate a receipt =======
-        const receiptResponse = await axios.post("http://localhost:6000/erp/bills/generateRecipt", billDetailsResponse.data);
+        const receiptResponse = await axios.post("https://skateshopapi-ereq.onrender.com/erp/bills/generateRecipt", billDetailsResponse.data);
 
         // ======= 6. Notify UiPath =======
         const body = await notifyUiPathFilter(orderData)
