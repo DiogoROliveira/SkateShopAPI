@@ -1,28 +1,13 @@
+import axios from "axios";
+import dotenv from "dotenv";
+import getAccessToken from "../token/rpaToken.js";
+import { notifyUiPathFilter } from "../utils/filters/uipathFilter.js";
+import { generateSeriesNumber, generateDate } from "../utils/helpers/dateHelpers.js";
 import { getClientByKey, postClient, getAllClients } from "../services/clientService.js";
 import { getAllBills, getBillById, postRecipt, postBill, postSuplierBill } from "../services/billService.js";
 import { getAllProducts, getProductByKey } from "../services/productService.js";
 import { getAllOrders, postOrder, getOrderById} from "../services/orderService.js";
-import { generateSeriesNumber, generateDate } from "../utils/helpers/dateHelpers.js";
-import {
-    getSalesOrders,
-    createSalesOrder,
-    deleteSalesOrder,
-} from "../services/salesService.js";
-import {
-    getPurchaseOrders,
-    getPurchaseOrderById,
-    createPurchaseOrder,
-    deletePurchaseOrder,
-} from "../services/purchasesService.js";
-import axios from "axios";
-import getAccessToken from "../token/rpaToken.js";
-import dotenv from "dotenv";
-import {
-    truckBody,
-    deckBody,
-    wheelsBody,
-    supplyBodySetter,
-} from "../utils/helpers/supplyBodyHelper.js";
+import { getPurchaseOrders, getPurchaseOrderById, createPurchaseOrder, deletePurchaseOrder } from "../services/purchasesService.js";
 dotenv.config();
 
 // ========= Clients ============
@@ -153,6 +138,7 @@ export const fetchOrderById = async (req, res) => {
     }
 };
 
+// ======= Automatics ========
 export const clientPurchaseProcess = async (req, res) => {
     const orderData = req.body;
 
@@ -173,9 +159,9 @@ export const clientPurchaseProcess = async (req, res) => {
         const receiptResponse = await axios.post("http://localhost:6000/erp/bills/generateRecipt", billDetailsResponse.data);
 
         // ======= 6. Notify UiPath =======
-        const notifyRPA = await notifyUiPath(billResponse.data, orderDetailsResponse.data);
+        const body = await notifyUiPathFilter(orderData)
+        const notifyRPA = await notifyUiPath(billDetailsResponse.data, body);
 
-        // Send a successful response
         return res.status(201).json({
             order: orderResponse.data,
             bill: billResponse.data,
@@ -184,7 +170,6 @@ export const clientPurchaseProcess = async (req, res) => {
         });
 
     } catch (error) {
-        // Handle errors with more context
         console.error("Error processing automatic order:", error);
         return res.status(500).json({
             message: "Error processing automatic order!",
@@ -194,55 +179,7 @@ export const clientPurchaseProcess = async (req, res) => {
     }
 };
 
-// ======== Sales Orders ============
-
-// Obter todos os pedidos
-export const fetchSalesOrders = async (req, res) => {
-    try {
-        const ordersList = await getSalesOrders();
-        res.status(200).json(ordersList);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error retrieving orders!",
-            error: error.message,
-        });
-    }
-};
-
-// Obter os detalhes de um pedido por ID
-
-export const createNewSalesOrder = async (req, res) => {
-    try {
-        const orderData = req.body; // Dados do pedido enviados pelo cliente
-        const newOrder = await createSalesOrder(orderData);
-        res.status(201).json(newOrder);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error creating new sales order!",
-            error: error.message,
-        });
-    }
-};
-
-
-
-// Apagar um pedido por ID
-export const deleteOrderById = async (req, res) => {
-    try {
-        const orderId = req.params.id; // ID do pedido recebido como parâmetro
-        const result = await deleteSalesOrder(orderId);
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error deleting sales order!",
-            error: error.message,
-        });
-    }
-};
-
 // ======== Purchase Orders ============
-
-// Obter todas as Purchase Orders
 export const fetchAllPurchaseOrders = async (req, res) => {
     try {
         const orders = await getPurchaseOrders();
@@ -255,7 +192,6 @@ export const fetchAllPurchaseOrders = async (req, res) => {
     }
 };
 
-// Obter detalhes de uma Purchase Order por ID
 export const fetchPurchaseOrderById = async (req, res) => {
     try {
         const orderId = req.params.id;
@@ -269,7 +205,6 @@ export const fetchPurchaseOrderById = async (req, res) => {
     }
 };
 
-// Criar uma nova Purchase Order
 export const createNewPurchaseOrder = async (req, res) => {
     try {
         const orderData = req.body;
@@ -283,7 +218,6 @@ export const createNewPurchaseOrder = async (req, res) => {
     }
 };
 
-// Apagar uma Purchase Order por ID
 export const deletePurchaseOrderById = async (req, res) => {
     try {
         const orderId = req.params.id;

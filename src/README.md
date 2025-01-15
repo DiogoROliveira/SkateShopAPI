@@ -106,6 +106,12 @@ npm start
 
 ## **API Routes**
 
+### Automatic Routes
+
+| Method | Route               | Description                                                                                                      |
+| ------ | ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| POST   | /erp/clientPurchase | Does a complete client product buying order with bill and receipt generation, includes UiPath Email Notification |
+
 ### Client Routes
 
 | Method | Route             | Description          |
@@ -126,13 +132,18 @@ npm start
 
 ### Product Routes
 
-| Method | Route                     | Description          |
-| ------ | ------------------------- | -------------------- |
-| GET    | /erp/products             | Returns all bills   |
-| GET    | /erp/products/:key        | Returns one product |
-| POST   | /erp/bills                | Create bill          |
-| POST   | /erp/bills/generateRecipt | Create receipt       |
-| POST   | /erp/bills/suplier        | Create suplier bill  |
+| Method | Route              | Description           |
+| ------ | ------------------ | --------------------- |
+| GET    | /erp/products      | Returns all products |
+| GET    | /erp/products/:key | Returns one product  |
+
+### Order Routes
+
+| Method | Route           | Description         |
+| ------ | --------------- | :------------------ |
+| GET    | /erp/orders     | Returns all orders |
+| GET    | /erp/orders/:id | Returns one order  |
+| POST   | /erp/orders     | Create order        |
 
 ---
 

@@ -20,11 +20,10 @@ import {
     fetchOrders,
     addNewOrder,
     fetchOrderById,
-    fetchSalesOrders,
+
+  //Automatics
     clientPurchaseProcess,
 
-    createNewSalesOrder,
-    deleteOrderById,
     fetchAllPurchaseOrders,
     fetchPurchaseOrderById,
     createNewPurchaseOrder,
@@ -53,40 +52,15 @@ router.get("/products/:key", fetchProductsByKey);
 router.get("/orders", fetchOrders);
 router.post("/orders", addNewOrder);
 router.get("/orders/:id", fetchOrderById);
+
+// ======= Automatics ========
 router.post("/clientPurchase", clientPurchaseProcess);
-
-// Sales Order //
-router.get("/salesOrder", fetchSalesOrders); // GET /sales/orders/odata
-
-router.post("/salesOrders", createNewSalesOrder); // POST /sales/orders
-router.delete("/salesOrder/:id", deleteOrderById); // DELETE /sales/orders/{id}
 
 // ========= Purchase Orders ============
 
-router.get("/purchaseOrders", fetchAllPurchaseOrders); // Obter todas as Purchase Orders
-router.get("/purchaseOrders/:id", fetchPurchaseOrderById); // Obter detalhes de uma Purchase Order por ID
-router.post("/purchaseOrders", createNewPurchaseOrder); // Criar uma nova Purchase Order
-/*
-{
-  "sellerSupplierParty": "0020",
-  "sellerSupplierPartyName": "FORN TABUAS SKATE",
-  "documentLines": [
-    {
-      "purchasesItem": "DECKLARGE",
-      "description": "Tabua Maple 8.0",
-      "quantity": 5,
-      "unitPrice": { 
-        "amount": 40.0,
-        "baseAmount": 40.0,
-        "reportingAmount": 40.0
-        },
-      "unit": "UN"
-    }
-  ],
-  "emailTo": "youremail@gmail.com"
-}
-*/
-
+router.get("/purchaseOrders", fetchAllPurchaseOrders);
+router.get("/purchaseOrders/:id", fetchPurchaseOrderById);
+router.post("/purchaseOrders", createNewPurchaseOrder);
 router.delete("/purchaseOrders/:id", deletePurchaseOrderById); // Apagar uma Purchase Order por ID
 
 export default router;

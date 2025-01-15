@@ -2,7 +2,6 @@ import { getToken } from "../token/token.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/purchases/orders`;
 
-// Formatar os dados de um pedido
 export const formatPurchaseOrderData = (orderData) => {
     return {
         id: orderData.id,
@@ -15,7 +14,34 @@ export const formatPurchaseOrderData = (orderData) => {
     };
 };
 
-// Função para obter todas as Purchase Orders
+/*
+{
+  "sellerSupplierParty": "0020",
+  "sellerSupplierPartyName": "FORN TABUAS SKATE",
+  "documentLines": [
+    {
+      "purchasesItem": "DECKLARGE",
+      "description": "Tabua Maple 8.0",
+      "quantity": 5,
+      "unitPrice": { 
+        "amount": 40.0,
+        "baseAmount": 40.0,
+        "reportingAmount": 40.0
+        },
+      "unit": "UN"
+    }
+  ],
+  "emailTo": "youremail@gmail.com"
+}
+*/
+
+//
+// JSON para POST
+// {
+//   "itemKey": "WHLSWHITE"
+// }
+
+
 const fetchData = async (url, options) => {
     try {
         const response = await fetch(url, options);
@@ -32,7 +58,6 @@ const fetchData = async (url, options) => {
     }
 };
 
-// Obter todas as Purchase Orders (GET /purchases/orders/odata)
 export const getPurchaseOrders = async () => {
     const token = await getToken();
     const apiURL = `${baseURL}/odata`;
@@ -47,14 +72,13 @@ export const getPurchaseOrders = async () => {
 
     try {
         const data = await fetchData(apiURL, options);
-        return data.items.map(formatPurchaseOrderData); // Formatar cada pedido
+        return data.items.map(formatPurchaseOrderData);
     } catch (error) {
         console.error("Error fetching purchase orders:", error.message);
         throw error;
     }
 };
 
-// Obter uma Purchase Order por ID (GET /purchases/orders/{id})
 export const getPurchaseOrderById = async (orderId) => {
     const token = await getToken();
     const apiURL = `${baseURL}/${orderId}`;
@@ -69,14 +93,13 @@ export const getPurchaseOrderById = async (orderId) => {
 
     try {
         const orderData = await fetchData(apiURL, options);
-        return formatPurchaseOrderData(orderData); // Formatar os dados do pedido específico
+        return formatPurchaseOrderData(orderData);
     } catch (error) {
         console.error("Error fetching purchase order by ID:", error.message);
         throw error;
     }
 };
 
-// Função para criar uma nova Purchase Order
 export const createPurchaseOrder = async (orderData) => {
     const token = await getToken();
     const apiURL = `${baseURL}`;
@@ -107,7 +130,6 @@ export const createPurchaseOrder = async (orderData) => {
     }
 };
 
-// Função para deletar uma Purchase Order por ID
 export const deletePurchaseOrder = async (orderId) => {
     const token = await getToken();
     const apiURL = `${baseURL}/${orderId}`;
@@ -136,9 +158,3 @@ export const deletePurchaseOrder = async (orderId) => {
         throw error;
     }
 };
-
-//
-// JSON para POST
-// {
-//   "itemKey": "WHLSWHITE"
-// }
