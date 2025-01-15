@@ -204,14 +204,12 @@ export const clientRegistrationProcess = async (req, res) => {
         // ======= 2. Fetch the client by ID =======
         const clientBody = await axios.get(`http://localhost:6000/erp/clients/${clientId.data}`);
 
-        return res.status(201).json(clientBody);
+        return res.status(201).json(clientBody.data);
 
     } catch (error) {
-        console.error("Error processing automatic registration:", error);
-        return res.status(500).json({
+        res.status(500).json({
             message: "Error processing automatic registration!",
-            error: error.message || error,
-            stack: error.stack || null,
+            error: error.message,
         });
     }
 };
