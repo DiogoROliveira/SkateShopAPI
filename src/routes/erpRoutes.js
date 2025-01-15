@@ -16,10 +16,13 @@ import {
     fetchProducts,
     fetchProductsByKey,
 
+  //Orders
     fetchOrders,
     addNewOrder,
+    fetchOrderById,
     fetchSalesOrders,
-    fetchSalesOrderById,
+    clientPurchaseProcess,
+
     createNewSalesOrder,
     deleteOrderById,
     fetchAllPurchaseOrders,
@@ -49,52 +52,12 @@ router.get("/products/:key", fetchProductsByKey);
 // ======== Orders ============
 router.get("/orders", fetchOrders);
 router.post("/orders", addNewOrder);
-// Exemplo de um pedido:
-/*
-{
-  "buyerCustomerParty": "INDIF",
-  "name": "Indiferenciado",
-  "address": "Rua de Cima",
-  "emailTo": "youremail@gmail.com",
-  "documentLines": [
-    {
-      "salesItem": "DECKLARGE",
-      "description": "Tabua Maple 8.0",
-      "quantity": 5,
-      "unitPrice": { 
-        "amount": 1.0,
-        "baseAmount": 1.0,
-        "reportingAmount": 1.0
-        },
-      "unit": "UN"
-    }
-  ]
-}
-
-
-{
-  "OrderID": 1,
-  "Total": 710.0,
-  "name": "dem",
-  "email": "dem@example.com",
-  "phone_number": "123456789",
-  "address": "dem",
-  "city": "dem",
-  "postal_code": "dem",
-  "country": "dem",
-  "products": [
-    {
-      "ItemID": "SKTBLACK",
-      "Quantity": 2,
-      "SubTotal": 300.0
-    }
-  ]
-}
-*/
+router.get("/orders/:id", fetchOrderById);
+router.post("/clientPurchase", clientPurchaseProcess);
 
 // Sales Order //
 router.get("/salesOrder", fetchSalesOrders); // GET /sales/orders/odata
-router.get("/salesOrder/:id", fetchSalesOrderById); // GET /sales/orders/{id}
+
 router.post("/salesOrders", createNewSalesOrder); // POST /sales/orders
 router.delete("/salesOrder/:id", deleteOrderById); // DELETE /sales/orders/{id}
 

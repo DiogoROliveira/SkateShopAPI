@@ -6,8 +6,6 @@ export function generateSeriesNumber() {
 
 export const generateDate = () => {
     const currentDate = new Date();
-    // Ensure the year is 2025
     currentDate.setFullYear(2025);
-    return currentDate.toISOString().split('T')[0]; // returns in 'YYYY-MM-DD' format
-  }
-  
+    return currentDate.toISOString().split('T')[0];
+}

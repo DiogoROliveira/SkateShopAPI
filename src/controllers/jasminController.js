@@ -1,11 +1,10 @@
 import { getClientByKey, postClient, getAllClients } from "../services/clientService.js";
 import { getAllBills, getBillById, postRecipt, postBill, postSuplierBill } from "../services/billService.js";
 import { getAllProducts, getProductByKey } from "../services/productService.js";
-import { createNewOrder, getOrders } from "../services/orderService.js";
-import { generateSeriesNumber, generateDate } from "../utils/helpers/billHelpers.js";
+import { getAllOrders, postOrder, getOrderById} from "../services/orderService.js";
+import { generateSeriesNumber, generateDate } from "../utils/helpers/dateHelpers.js";
 import {
     getSalesOrders,
-    getSalesOrderById,
     createSalesOrder,
     deleteSalesOrder,
 } from "../services/salesService.js";
@@ -102,7 +101,7 @@ export const addNewSuplierBill = async (req, res) => {
     }
 };
 
-// ======== Stock ============
+// ======== Products ============
 export const fetchProducts = async (req, res) => {
     try {
         const productsList = await getAllProducts();
@@ -123,130 +122,77 @@ export const fetchProductsByKey = async (req, res) => {
 };
 
 // ======== Orders ============
-
 export const fetchOrders = async (req, res) => {
     try {
-        const ordersList = await getOrders();
+        const ordersList = await getAllOrders();
         res.status(200).json(ordersList);
     } catch (error) {
-        res.status(500).json({ message: "Error retrieving orders!", error: error.message });
+        res.status(500).json({ message: "Error retrieving products!", error: error.message });
     }
 };
 
 export const addNewOrder = async (req, res) => {
-    const orderDetails = req.body;
-    const formattedDate = generateDate();
-
-    // Validação para garantir que orderData e products estão presentes
-    if (!orderDetails || !Array.isArray(orderDetails.products)) {
-        return res.status(400).json({
-            message: "Invalid order data! 'products' must be an array."
-        });
-    }
-
-    console.log(orderDetails);
-
-    // Criando documentLines sem usar map()
-    const documentLines = [];
-    for (const product of orderDetails.products) {
-        documentLines.push({
-            salesItem: product.itemID,
-            description: `Product ${product.itemID}`,
-            quantity: product.quantity,
-            unitPrice: {
-                amount: product.subTotal,
-                baseAmount: product.subTotal,
-                reportingAmount: product.subTotal,
-            },
-            unit: "UN"
-        });
-    }
-
-    const filteredOrderData = {
-        buyerCustomerParty: orderDetails.customerPartyKey,
-        name: orderDetails.name,
-        address: `${orderDetails.address} ${orderDetails.postal_code} ${orderDetails.city} ${orderDetails.country}`,
-        emailTo: orderDetails.email,
-        documentLines
-    };
-
-    console.log(filteredOrderData);
-
-    // Ensure documentLines is an array before proceeding
-    if (!Array.isArray(filteredOrderData.documentLines)) {
-        return res.status(400).json({ message: "documentLines is not an array!" });
-    }
-
     try {
-        const body = {
-            documentType: "ECL",
-            serie: "2025",
-            seriesNumber: generateSeriesNumber(),
-            documentDate: formattedDate,
-            postingDate: formattedDate,
-            buyerCustomerParty: filteredOrderData.buyerCustomerParty,
-            buyerCustomerPartyName: filteredOrderData.name,
-            buyerCustomerPartyAddress: filteredOrderData.address,
-            accountingParty: filteredOrderData.buyerCustomerParty,
-            exchangeRate: 1,
-            discount: 0,
-            currency: "EUR",
-            paymentMethod: "TRA",
-            paymentTerm: "00",
-            company: "DEFAULT",
-            deliveryTerm: "TRANSP",
-            deliveryOnInvoice: false,
-            isSeriesCommunicated: true,
-            ignoreAssociatedSalesItems: false,
-            documentLines: filteredOrderData.documentLines.map((line) => ({
-                ...line,
-                unitPrice: {
-                    ...line.unitPrice,
-                    fractionDigits: 2,
-                    symbol: "€",
-                },
-                unit: "UN",
-                itemTaxSchema: "NORMAL",
-            })),
-            WTaxTotal: {
-                amount: 0,
-                baseAmount: 0,
-                reportingAmount: 0,
-                fractionDigits: 2,
-                symbol: "€",
-            },
-            TotalLiability: {
-                baseAmount: 0,
-                reportingAmount: 0,
-                fractionDigits: 2,
-                symbol: "€",
-            },
-            emailTo: filteredOrderData.emailTo,
-        };
+        const orderBody = await postOrder(req.body);
+        res.status(201).json(orderBody);
+    } catch (error) {
+        res.status(500).json({ message: "Error posting order!", error: error.message });
+    }
+};
 
-        console.log(body);
-        const createdOrder = await createNewOrder(body);
-
-        const createdBill = await addNewBill({
-            ...body
-        });
-
-        // Notify UI Path
-        await notifyUiPath(createdBill, body);
-
-        res.status(201).json({
-            order: createdOrder,
-            bill: createdBill,
-        });
+export const fetchOrderById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const order = await getOrderById(id);
+        res.status(200).json(order);
     } catch (error) {
         res.status(500).json({
-            message: "Error processing order!",
+            message: "Error retrieving order by ID!",
             error: error.message,
         });
     }
 };
 
+export const clientPurchaseProcess = async (req, res) => {
+    const orderData = req.body;
 
+    try {
+        // ======= 1. Create a new order =======
+        const orderResponse = await axios.post("http://localhost:6000/erp/orders", orderData);
+
+        // ======= 2. Fetch the order by ID =======
+        const orderDetailsResponse = await axios.get(`http://localhost:6000/erp/orders/${orderResponse.data}`);
+
+        // ======= 3. Create a new bill =======
+        const billResponse = await axios.post("http://localhost:6000/erp/bills", orderDetailsResponse.data);
+
+        // ======= 4. Fetch the bill by ID =======
+        const billDetailsResponse = await axios.get(`http://localhost:6000/erp/bills/${billResponse.data}`);
+
+        // ======= 5. Generate a receipt =======
+        const receiptResponse = await axios.post("http://localhost:6000/erp/bills/generateRecipt", billDetailsResponse.data);
+
+        // ======= 6. Notify UiPath =======
+        const notifyRPA = await notifyUiPath(billResponse.data, orderDetailsResponse.data);
+
+        // Send a successful response
+        return res.status(201).json({
+            order: orderResponse.data,
+            bill: billResponse.data,
+            receipt: receiptResponse.data,
+            rpa: notifyRPA,
+        });
+
+    } catch (error) {
+        // Handle errors with more context
+        console.error("Error processing automatic order:", error);
+        return res.status(500).json({
+            message: "Error processing automatic order!",
+            error: error.message || error,
+            stack: error.stack || null,
+        });
+    }
+};
 
 // ======== Sales Orders ============
 
@@ -264,23 +210,6 @@ export const fetchSalesOrders = async (req, res) => {
 };
 
 // Obter os detalhes de um pedido por ID
-export const fetchSalesOrderById = async (req, res) => {
-    const { id } = req.params;
-
-    if (!id) {
-        return res.status(400).json({ message: "Order ID is required!" });
-    }
-
-    try {
-        const orderDetails = await getSalesOrderById(id);
-        res.status(200).json(orderDetails);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error retrieving order by ID!",
-            error: error.message,
-        });
-    }
-};
 
 export const createNewSalesOrder = async (req, res) => {
     try {
@@ -428,7 +357,7 @@ const processPurchaseOrder = async (orderData) => {
 
 // ======== UIPATH =========
 
-const notifyUiPath = async (invoiceId, body) => {
+export const notifyUiPath = async (invoiceId, body) => {
     try {
         // Obter o token de acesso
         const accessToken = await getAccessToken();

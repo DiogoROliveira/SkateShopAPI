@@ -1,5 +1,5 @@
 import { getToken } from "../token/token.js";
-import { getClientFilter, getClientListFilter, postClientFilter } from "../utils/filters/clientFilter.js";
+import { getClientFilter, getClientListFilter, validateClientInfo, postClientFilter } from "../utils/filters/clientFilter.js";
 
 const baseURL = `https://my.jasminsoftware.com/api/${process.env.ACCOUNT}/${process.env.SUBSCRIPTION}/salesCore/customerParties`;
 
@@ -69,7 +69,8 @@ export const postClient = async (clientBody) => {
         const token = await getToken();
         const apiURL = `${baseURL}`;
 
-        const formattedData = postClientFilter(clientBody);
+        const validatedData = validateClientInfo(clientBody);
+        const formattedData = postClientFilter(validatedData);
 
         const options = {
             method: "POST",

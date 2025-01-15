@@ -1,4 +1,4 @@
-import { generateSeriesNumber, generateDate } from "../helpers/billHelpers.js";
+import { generateSeriesNumber, generateDate } from "../helpers/dateHelpers.js";
 export const getBillListFilter = (billsList) => {
     return billsList.map((billData) => ({
         id: billData.id,
