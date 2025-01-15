@@ -23,6 +23,7 @@ import {
 
   //Automatics
     clientPurchaseProcess,
+    clientRegistrationProcess,
 
     fetchAllPurchaseOrders,
     fetchPurchaseOrderById,
@@ -55,6 +56,7 @@ router.get("/orders/:id", fetchOrderById);
 
 // ======= Automatics ========
 router.post("/clientPurchase", clientPurchaseProcess);
+router.post("/clientRegistration", clientRegistrationProcess)
 
 // ========= Purchase Orders ============
 

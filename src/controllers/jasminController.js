@@ -192,6 +192,30 @@ export const clientPurchaseProcess = async (req, res) => {
     }
 };
 
+
+
+export const clientRegistrationProcess = async (req, res) => {
+    const clientData = req.body;
+
+    try {
+        // ======= 1. Create a new client =======
+        const clientId = await axios.post("http://localhost:6000/erp/clients", clientData);
+
+        // ======= 2. Fetch the client by ID =======
+        const clientBody = await axios.get(`http://localhost:6000/erp/clients/${clientId.data}`);
+
+        return res.status(201).json(clientBody);
+
+    } catch (error) {
+        console.error("Error processing automatic registration:", error);
+        return res.status(500).json({
+            message: "Error processing automatic registration!",
+            error: error.message || error,
+            stack: error.stack || null,
+        });
+    }
+};
+
 // ======== Purchase Orders ============
 export const fetchAllPurchaseOrders = async (req, res) => {
     try {
