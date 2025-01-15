@@ -11,6 +11,7 @@ app.use(express.json());
 app.use('/erp', erpRoutes);
 app.use('/stripe', stripeRoutes);
 
-app.listen(() => {
-  console.log(`App listening`);
+const port = 6000;
+app.listen(port, () => {
+  console.log(`App listening on http://localhost:${port}`);
 });
