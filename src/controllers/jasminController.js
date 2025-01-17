@@ -155,6 +155,8 @@ export const fetchOrderById = async (req, res) => {
 export const clientPurchaseProcess = async (req, res) => {
     const orderData = req.body;
 
+    console.log(orderData);
+
     try {
         // ======= 1. Create a new order =======
         const orderResponse = await axios.post("http://localhost:6000/erp/orders", orderData);
