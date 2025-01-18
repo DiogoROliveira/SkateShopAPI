@@ -102,7 +102,7 @@ export const fetchProductsByKey = async (req, res) => {
         const product = await getProductByKey(key);
 
         // ======= 1. Notify Admin of Low Stock =======
-        if (product.stock <= process.env.ISLOW) {
+        if (product.stock <= process.env.ISLOW || product.itemKey == 'SKTRED') {
             notifyUiPathStock(
                 process.env.ADMIN_EMAIL,
                 product.description,
